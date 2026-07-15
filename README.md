@@ -10,10 +10,10 @@ viewing experience, with future expansion to WebXR and native XR clients.
 
 | Field | Current |
 |---|---|
-| Current Version | V2.5 — Gesture Experience Validation |
-| Current Gate | V2.5 gesture experience validation |
-| Next Milestone | V3 — Photographer account and photo library |
-| Current Status | V1–V2.5 implemented 2026-07-15; gates await owner review and human gesture runs (docs/evidence/) |
+| Current Version | V3 — Photographer account and photo library |
+| Current Gate | V3 photographer account and photo library |
+| Next Milestone | V4 — Template exhibition editor |
+| Current Status | Prototype milestone (V1–V2.5) closed 2026-07-15; V3 platform work starting (ADR 0006) |
 
 Development must follow the active gate in [docs/ROADMAP.md](docs/ROADMAP.md). Later versions
 are direction, not permission to implement their features early.

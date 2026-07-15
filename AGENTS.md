@@ -173,3 +173,7 @@ The final section recommends the next eligible step; it does not begin it.
 Plan first, obtain explicit approval, implement the active scope, validate in proportion to
 risk, and hand off against the current version gate. Do not create or modify files, install
 dependencies, or begin feature work without an approved plan.
+
+**Never push to any git remote unless the owner explicitly instructs it in the current
+conversation.** Local commits accompany implementation handoffs as usual; pushing to
+GitHub is always a separate, owner-initiated action.

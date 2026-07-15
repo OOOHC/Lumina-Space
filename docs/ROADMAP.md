@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
 last-updated: 2026-07-15
-current-version: V2.5
-current-gate: V2.5 gesture experience validation
-next-milestone: V3 photographer account and photo library
+current-version: V3
+current-gate: V3 photographer account and photo library
+next-milestone: V4 template exhibition editor
 ---
 
 # ROADMAP
@@ -84,11 +84,10 @@ The dependency rules in ARD and AGENTS are binding, but deferred modules remain 
 
 ## Prototype Milestone
 
-## V1 — Stable local viewing gallery (implemented 2026-07-15; gate open — see below)
+## V1 — Stable local viewing gallery (closed 2026-07-15)
 
-> Gate status: advanced to V2 by owner instruction on 2026-07-15. Two exit criteria
-> remain open and must be closed during owner review: the first-time tester run and an
-> fps observation on owner hardware. Tracked in `docs/evidence/V1.md`.
+> Gate closed 2026-07-15: the owner completed the first-time journey unaided and
+> reported normal behaviour and smooth performance on own hardware.
 
 ### Product Goal
 
@@ -131,7 +130,7 @@ Validate that a first-time visitor can and wants to view a curated photography s
 
 ### Exit Criteria
 
-- [ ] A first-time tester completes the full journey without verbal instruction. (OPEN — owner run)
+- [x] A first-time tester completes the full journey without verbal instruction. (owner run, 2026-07-15)
 - [x] All 12 photographs render reliably through repeated open/close cycles. (15 cycles, 0 failures)
 - [x] Camera cannot leave the intended experience or pass through blocking geometry.
 - [x] Loading and failure paths recover without a page refresh where recovery is possible.
@@ -147,7 +146,7 @@ Validate that a first-time visitor can and wants to view a curated photography s
 - Screenshots/video of primary and fallback journeys
 - Build, type-check, and test output
 
-## V2 — Intent-based conventional interaction (implemented 2026-07-15; gate pending owner approval)
+## V2 — Intent-based conventional interaction (closed 2026-07-15)
 
 ### Product Goal
 
@@ -201,7 +200,14 @@ cannot identify the device that produced an intent.
 - Architecture import review
 - Build and type-check output
 
-## V2.5 — Gesture Experience Validation (current — implemented 2026-07-15; human validation runs outstanding)
+## V2.5 — Gesture Experience Validation (closed 2026-07-15 by owner decision — multi-tester protocol deferred)
+
+> Owner decision 2026-07-15: after the field-run fixes, the owner re-tested on real
+> hardware — engagement no longer misfires, point + pinch opens a photograph, and
+> point + pinch returns it to the wall. The owner accepted this single-tester evidence
+> to close the prototype milestone and advance to V3. The formal multi-tester protocol
+> (`docs/evidence/V2.5-protocol.md`) is deferred, and must run before any production
+> gesture claim at V5. Unchecked criteria below are covered by this deferral.
 
 ### Product Goal
 
@@ -314,7 +320,7 @@ the existing vocabulary cannot represent a validated product action.
 
 ## Product Milestone
 
-## V3 — Photographer account and photo library
+## V3 — Photographer account and photo library (current)
 
 ### Product Goal
 
