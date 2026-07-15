@@ -1,5 +1,6 @@
+import { intentBus } from '../input/intent';
+
 interface HudControlsProps {
-  onResetView: () => void;
   /** Title of the keyboard-focused photograph, announced to screen readers. */
   focusedTitle: string | null;
 }
@@ -8,7 +9,8 @@ interface HudControlsProps {
  * Minimal chrome over the 3D view: wordmark, a one-line hint, Reset View.
  * Everything else belongs to the photographs.
  */
-export function HudControls({ onResetView, focusedTitle }: HudControlsProps) {
+export function HudControls({ focusedTitle }: HudControlsProps) {
+  const onResetView = () => intentBus.emit({ type: 'reset-view' });
   return (
     <div className="hud">
       <p className="hud-wordmark">Lumina Space</p>

@@ -1,8 +1,8 @@
+import { intentBus } from '../input/intent';
 import type { Photo } from '../types';
 
 interface GalleryFallbackProps {
   photos: Photo[];
-  onSelect: (id: string) => void;
   /** True when the 3D view is unavailable rather than merely impractical. */
   webglUnavailable: boolean;
 }
@@ -12,7 +12,8 @@ interface GalleryFallbackProps {
  * without WebGL. The complete journey — browse, open detail, read metadata,
  * return — is preserved in editorial 2D.
  */
-export function GalleryFallback({ photos, onSelect, webglUnavailable }: GalleryFallbackProps) {
+export function GalleryFallback({ photos, webglUnavailable }: GalleryFallbackProps) {
+  const onSelect = (photoId: string) => intentBus.emit({ type: 'select-photo', photoId });
   return (
     <div className="fallback">
       <header className="fallback-header">

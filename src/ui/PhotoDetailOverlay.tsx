@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { intentBus } from '../input/intent';
 import type { Photo } from '../types';
 
 interface PhotoDetailOverlayProps {
   photo: Photo;
-  onClose: () => void;
 }
 
 /**
@@ -11,9 +11,10 @@ interface PhotoDetailOverlayProps {
  * one predictable way back. Works identically for pointer, keyboard, and
  * touch; Escape is handled by the global keyboard listener in App.
  */
-export function PhotoDetailOverlay({ photo, onClose }: PhotoDetailOverlayProps) {
+export function PhotoDetailOverlay({ photo }: PhotoDetailOverlayProps) {
   const backButton = useRef<HTMLButtonElement>(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const onClose = () => intentBus.emit({ type: 'back' });
 
   useEffect(() => {
     backButton.current?.focus();

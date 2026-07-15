@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
 last-updated: 2026-07-15
-current-version: V1
-current-gate: V1 stable local viewing gallery
-next-milestone: V2 intent-based conventional interaction
+current-version: V2
+current-gate: V2 intent-based conventional interaction
+next-milestone: V2.5 gesture experience validation
 ---
 
 # ROADMAP
@@ -84,7 +84,11 @@ The dependency rules in ARD and AGENTS are binding, but deferred modules remain 
 
 ## Prototype Milestone
 
-## V1 — Stable local viewing gallery (current)
+## V1 — Stable local viewing gallery (implemented 2026-07-15; gate open — see below)
+
+> Gate status: advanced to V2 by owner instruction on 2026-07-15. Two exit criteria
+> remain open and must be closed during owner review: the first-time tester run and an
+> fps observation on owner hardware. Tracked in `docs/evidence/V1.md`.
 
 ### Product Goal
 
@@ -127,14 +131,14 @@ Validate that a first-time visitor can and wants to view a curated photography s
 
 ### Exit Criteria
 
-- [ ] A first-time tester completes the full journey without verbal instruction.
-- [ ] All 12 photographs render reliably through repeated open/close cycles.
-- [ ] Camera cannot leave the intended experience or pass through blocking geometry.
-- [ ] Loading and failure paths recover without a page refresh where recovery is possible.
-- [ ] Pointer and keyboard users can complete every core task.
-- [ ] Reduced-motion mode remains functionally complete.
-- [ ] A performance budget and supported-browser matrix are recorded before gate approval.
-- [ ] Type-check, build, relevant tests, and manual journey checks pass.
+- [ ] A first-time tester completes the full journey without verbal instruction. (OPEN — owner run)
+- [x] All 12 photographs render reliably through repeated open/close cycles. (15 cycles, 0 failures)
+- [x] Camera cannot leave the intended experience or pass through blocking geometry.
+- [x] Loading and failure paths recover without a page refresh where recovery is possible.
+- [x] Pointer and keyboard users can complete every core task.
+- [x] Reduced-motion mode remains functionally complete.
+- [x] A performance budget and supported-browser matrix are recorded before gate approval.
+- [x] Type-check, build, relevant tests, and manual journey checks pass.
 
 ### Evidence
 
@@ -143,7 +147,7 @@ Validate that a first-time visitor can and wants to view a curated photography s
 - Screenshots/video of primary and fallback journeys
 - Build, type-check, and test output
 
-## V2 — Intent-based conventional interaction
+## V2 — Intent-based conventional interaction (current)
 
 ### Product Goal
 

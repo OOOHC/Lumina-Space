@@ -14,10 +14,26 @@ last-updated: 2026-07-12
 - Immutable public content and private mutable work
 - Server-enforced ownership when remote data arrives
 
-## Current architecture (as built)
+## Current architecture (as built, updated 2026-07-15)
 
-The repository is a single Vite + React + TypeScript application scaffold. No 3D, gallery,
-state, input, service, backend, or remote data layer exists yet. Roadmap descriptions are
+A single Vite + React + TypeScript application with the V1/V2 layers realised:
+
+- **scene/** — generic 3D runtime: `SceneCanvas` (renderer + WebGL detection),
+  `CameraRig` (bounded orbit + reset), `Lighting`, `Environment` (parametric room).
+  Contains no photograph knowledge.
+- **gallery/** — exhibition domain: `galleryLayout` (pure wall-placement function),
+  `PhotoFrame` (textured print with per-photo suspense/error isolation), `GalleryScene`.
+- **input/** — `intent.ts` (device-neutral instant-intent vocabulary + plain bus) and
+  `keyboardAdapter.ts`. Pointer and touch reach the bus through unified Pointer Events
+  on interactive surfaces; no lifecycle wrappers exist because no continuous intent
+  exists yet.
+- **state/** — one Zustand store (`galleryStore`) plus `intentBindings.ts`, the single
+  place where intents become state changes and inapplicable intents are ignored.
+- **services/** — `photoRepository` function boundary serving bundled `data/` photos.
+- **ui/** — status screens, HUD, detail overlay, 2D editorial fallback (small viewport
+  or no WebGL), reduced-motion hook.
+
+Backend, gesture, and XR layers do not exist. Roadmap descriptions beyond V2 are
 requirements, not claims about current code.
 
 ## Planned application layers

@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { intentBus } from '../input/intent';
 import { CameraRig } from '../scene/CameraRig';
 import { Environment } from '../scene/Environment';
 import { Lighting } from '../scene/Lighting';
@@ -18,10 +19,13 @@ export function GalleryScene({ reducedMotion }: GallerySceneProps) {
   const photos = useGalleryStore((s) => s.photos);
   const selectedId = useGalleryStore((s) => s.selectedId);
   const focusedIndex = useGalleryStore((s) => s.focusedIndex);
-  const select = useGalleryStore((s) => s.select);
   const resetToken = useGalleryStore((s) => s.resetToken);
 
   const placements = useMemo(() => galleryLayout(photos.length), [photos.length]);
+  const select = useCallback(
+    (photoId: string) => intentBus.emit({ type: 'select-photo', photoId }),
+    [],
+  );
 
   return (
     <>

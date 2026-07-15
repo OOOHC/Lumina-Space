@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GalleryScene } from './gallery/GalleryScene';
+import { attachKeyboardAdapter } from './input/keyboardAdapter';
 import { isWebGLAvailable, SceneCanvas } from './scene/SceneCanvas';
 import { useGalleryStore } from './state/galleryStore';
+import { bindIntents } from './state/intentBindings';
 import { GalleryFallback } from './ui/GalleryFallback';
 import { HudControls } from './ui/HudControls';
 import { PhotoDetailOverlay } from './ui/PhotoDetailOverlay';
@@ -29,8 +31,6 @@ export default function App() {
   const selectedId = useGalleryStore((s) => s.selectedId);
   const focusedIndex = useGalleryStore((s) => s.focusedIndex);
   const load = useGalleryStore((s) => s.load);
-  const select = useGalleryStore((s) => s.select);
-  const requestReset = useGalleryStore((s) => s.requestReset);
 
   const reducedMotion = usePrefersReducedMotion();
   const smallViewport = useSmallViewport();
@@ -42,49 +42,12 @@ export default function App() {
   }, [load]);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const store = useGalleryStore.getState();
-      if (store.phase !== 'ready') return;
-      switch (event.key) {
-        case 'Escape':
-          if (store.selectedId !== null) {
-            event.preventDefault();
-            store.select(null);
-          }
-          break;
-        case 'ArrowRight':
-        case 'ArrowDown':
-          if (store.selectedId === null) {
-            event.preventDefault();
-            store.moveFocus(1);
-          }
-          break;
-        case 'ArrowLeft':
-        case 'ArrowUp':
-          if (store.selectedId === null) {
-            event.preventDefault();
-            store.moveFocus(-1);
-          }
-          break;
-        case 'Enter':
-          if (store.selectedId === null && store.photos.length > 0) {
-            const target = event.target as HTMLElement | null;
-            // Leave Enter alone when a button or link is focused.
-            if (target && (target.tagName === 'BUTTON' || target.tagName === 'A')) return;
-            event.preventDefault();
-            store.select(store.photos[store.focusedIndex].id);
-          }
-          break;
-        case 'r':
-        case 'R':
-          if (store.selectedId === null) {
-            store.requestReset();
-          }
-          break;
-      }
+    const unbindIntents = bindIntents();
+    const detachKeyboard = attachKeyboardAdapter();
+    return () => {
+      detachKeyboard();
+      unbindIntents();
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   if (phase === 'loading') return <LoadingScreen />;
@@ -98,22 +61,16 @@ export default function App() {
   return (
     <div className="app">
       {useFallback ? (
-        <GalleryFallback
-          photos={photos}
-          onSelect={select}
-          webglUnavailable={!webglAvailable}
-        />
+        <GalleryFallback photos={photos} webglUnavailable={!webglAvailable} />
       ) : (
         <>
           <SceneCanvas>
             <GalleryScene reducedMotion={reducedMotion} />
           </SceneCanvas>
-          <HudControls onResetView={requestReset} focusedTitle={focusedTitle} />
+          <HudControls focusedTitle={focusedTitle} />
         </>
       )}
-      {selectedPhoto && (
-        <PhotoDetailOverlay photo={selectedPhoto} onClose={() => select(null)} />
-      )}
+      {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}
     </div>
   );
 }
