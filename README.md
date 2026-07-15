@@ -10,10 +10,10 @@ viewing experience, with future expansion to WebXR and native XR clients.
 
 | Field | Current |
 |---|---|
-| Current Version | V0 — Engineering baseline |
-| Current Gate | Documentation and engineering baseline |
-| Next Milestone | V1 — Stable local viewing gallery |
-| Current Status | Product & Architecture Baseline v1.0; feature implementation not started |
+| Current Version | V1 — Stable local viewing gallery |
+| Current Gate | V1 stable local viewing gallery |
+| Next Milestone | V2 — Intent-based conventional interaction |
+| Current Status | V0 closed 2026-07-15; V1 implementation in progress |
 
 Development must follow the active gate in [docs/ROADMAP.md](docs/ROADMAP.md). Later versions
 are direction, not permission to implement their features early.

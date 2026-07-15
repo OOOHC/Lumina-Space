@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
-last-updated: 2026-07-12
-current-version: V0
-current-gate: V0 documentation and engineering baseline
-next-milestone: V1 stable local viewing gallery
+last-updated: 2026-07-15
+current-version: V1
+current-gate: V1 stable local viewing gallery
+next-milestone: V2 intent-based conventional interaction
 ---
 
 # ROADMAP
@@ -33,7 +33,7 @@ Every milestone is reviewed against the same eight sections:
 7. **Exit Criteria** — observable conditions required to close the version.
 8. **Evidence** — artefacts proving the exit criteria were met.
 
-## V0 — Engineering baseline (current)
+## V0 — Engineering baseline (closed 2026-07-15)
 
 ### Product Goal
 
@@ -70,11 +70,11 @@ The dependency rules in ARD and AGENTS are binding, but deferred modules remain 
 
 ### Exit Criteria
 
-- [ ] `npm run typecheck` succeeds.
-- [ ] `npm run build` succeeds.
-- [ ] CI invokes only existing package scripts.
-- [ ] Current documentation agrees on product order and active milestone.
-- [ ] Repository status contains no unexplained generated artefacts.
+- [x] `npm run typecheck` succeeds. (verified 2026-07-15)
+- [x] `npm run build` succeeds. (verified 2026-07-15)
+- [x] CI invokes only existing package scripts. (`npm ci` / `typecheck` / `build`)
+- [x] Current documentation agrees on product order and active milestone.
+- [x] Repository status contains no unexplained generated artefacts. (clean tree at `35e3670`)
 
 ### Evidence
 
@@ -84,7 +84,7 @@ The dependency rules in ARD and AGENTS are binding, but deferred modules remain 
 
 ## Prototype Milestone
 
-## V1 — Stable local viewing gallery
+## V1 — Stable local viewing gallery (current)
 
 ### Product Goal
 
