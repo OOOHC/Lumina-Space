@@ -10,10 +10,10 @@ viewing experience, with future expansion to WebXR and native XR clients.
 
 | Field | Current |
 |---|---|
-| Current Version | V2 — Intent-based conventional interaction |
-| Current Gate | V2 intent-based conventional interaction |
-| Next Milestone | V2.5 — Gesture Experience Validation |
-| Current Status | V1 + V2 implemented 2026-07-15; gates await owner review (see docs/evidence/) |
+| Current Version | V2.5 — Gesture Experience Validation |
+| Current Gate | V2.5 gesture experience validation |
+| Next Milestone | V3 — Photographer account and photo library |
+| Current Status | V1–V2.5 implemented 2026-07-15; gates await owner review and human gesture runs (docs/evidence/) |
 
 Development must follow the active gate in [docs/ROADMAP.md](docs/ROADMAP.md). Later versions
 are direction, not permission to implement their features early.

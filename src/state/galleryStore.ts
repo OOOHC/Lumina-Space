@@ -16,6 +16,7 @@ interface GalleryState {
   load: () => Promise<void>;
   select: (id: string | null) => void;
   moveFocus: (delta: number) => void;
+  setFocusedIndex: (index: number) => void;
   requestReset: () => void;
 }
 
@@ -56,6 +57,13 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     if (photos.length === 0) return;
     const next = (focusedIndex + delta + photos.length) % photos.length;
     set({ focusedIndex: next });
+  },
+
+  setFocusedIndex: (index) => {
+    const { photos, focusedIndex } = get();
+    if (index >= 0 && index < photos.length && index !== focusedIndex) {
+      set({ focusedIndex: index });
+    }
   },
 
   requestReset: () => set((s) => ({ resetToken: s.resetToken + 1 })),

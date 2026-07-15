@@ -5,6 +5,7 @@ import { Environment } from '../scene/Environment';
 import { Lighting } from '../scene/Lighting';
 import { useGalleryStore } from '../state/galleryStore';
 import { GALLERY_ROOM, galleryLayout } from './galleryLayout';
+import { GesturePointTarget } from './GesturePointTarget';
 import { PhotoFrame } from './PhotoFrame';
 
 interface GallerySceneProps {
@@ -30,6 +31,7 @@ export function GalleryScene({ reducedMotion }: GallerySceneProps) {
   return (
     <>
       <CameraRig resetToken={resetToken} reducedMotion={reducedMotion} />
+      <GesturePointTarget placements={placements} />
       <Lighting />
       <Environment
         width={GALLERY_ROOM.width}

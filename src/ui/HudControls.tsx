@@ -1,4 +1,5 @@
 import { intentBus } from '../input/intent';
+import { GestureControls } from './GestureControls';
 
 interface HudControlsProps {
   /** Title of the keyboard-focused photograph, announced to screen readers. */
@@ -20,6 +21,9 @@ export function HudControls({ focusedTitle }: HudControlsProps) {
       <button type="button" className="text-button hud-reset" onClick={onResetView}>
         Reset view
       </button>
+      <div className="hud-gesture">
+        <GestureControls />
+      </div>
       <div aria-live="polite" className="sr-only">
         {focusedTitle ?? ''}
       </div>

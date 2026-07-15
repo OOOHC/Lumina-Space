@@ -123,6 +123,22 @@ button {
   pointer-events: auto;
 }
 
+.hud-gesture {
+  position: absolute;
+  top: 1.25rem;
+  right: 2rem;
+  pointer-events: auto;
+  text-align: right;
+}
+
+.gesture-status {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  max-width: 20rem;
+}
+
 /* ---- Detail overlay ---- */
 
 .detail-overlay {

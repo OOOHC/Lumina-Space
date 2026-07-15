@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
 last-updated: 2026-07-15
-current-version: V2
-current-gate: V2 intent-based conventional interaction
-next-milestone: V2.5 gesture experience validation
+current-version: V2.5
+current-gate: V2.5 gesture experience validation
+next-milestone: V3 photographer account and photo library
 ---
 
 # ROADMAP
@@ -147,7 +147,7 @@ Validate that a first-time visitor can and wants to view a curated photography s
 - Screenshots/video of primary and fallback journeys
 - Build, type-check, and test output
 
-## V2 — Intent-based conventional interaction (current)
+## V2 — Intent-based conventional interaction (implemented 2026-07-15; gate pending owner approval)
 
 ### Product Goal
 
@@ -188,11 +188,11 @@ cannot identify the device that produced an intent.
 
 ### Exit Criteria
 
-- [ ] The core journey succeeds with pointer, keyboard, and supported touch viewport.
-- [ ] Replacing the input adapter does not require gallery or scene changes.
-- [ ] Instant and continuous intent semantics are documented and tested.
-- [ ] Cancellation and focus-loss tests leave no stuck interaction state.
-- [ ] No source-arbitration framework exists without a demonstrated competing-source case.
+- [x] The core journey succeeds with pointer, keyboard, and supported touch viewport.
+- [x] Replacing the input adapter does not require gallery or scene changes.
+- [x] Instant and continuous intent semantics are documented and tested.
+- [x] Cancellation and focus-loss tests leave no stuck interaction state.
+- [x] No source-arbitration framework exists without a demonstrated competing-source case.
 
 ### Evidence
 
@@ -201,7 +201,7 @@ cannot identify the device that produced an intent.
 - Architecture import review
 - Build and type-check output
 
-## V2.5 — Gesture Experience Validation
+## V2.5 — Gesture Experience Validation (current — implemented 2026-07-15; human validation runs outstanding)
 
 ### Product Goal
 

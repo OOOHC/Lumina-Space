@@ -23,10 +23,12 @@ A single Vite + React + TypeScript application with the V1/V2 layers realised:
   Contains no photograph knowledge.
 - **gallery/** — exhibition domain: `galleryLayout` (pure wall-placement function),
   `PhotoFrame` (textured print with per-photo suspense/error isolation), `GalleryScene`.
-- **input/** — `intent.ts` (device-neutral instant-intent vocabulary + plain bus) and
-  `keyboardAdapter.ts`. Pointer and touch reach the bus through unified Pointer Events
-  on interactive surfaces; no lifecycle wrappers exist because no continuous intent
-  exists yet.
+- **input/** — `intent.ts` (device-neutral vocabulary + plain bus: five instant intents
+  plus the continuous `point-at` stream and its `point-lost` cancel), `keyboardAdapter.ts`,
+  and `gesture/` (pure landmark classification + a lazily-loaded MediaPipe adapter that
+  emits `point-at` / `open-focused` / `point-lost`; raw landmarks never cross the
+  boundary). Pointer and touch reach the bus through unified Pointer Events on
+  interactive surfaces.
 - **state/** — one Zustand store (`galleryStore`) plus `intentBindings.ts`, the single
   place where intents become state changes and inapplicable intents are ignored.
 - **services/** — `photoRepository` function boundary serving bundled `data/` photos.
