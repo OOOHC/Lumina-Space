@@ -120,6 +120,15 @@ Gesture providers are adapters. MediaPipe is the first planned browser implement
 domain concept. Gallery behaviour receives focus/select/manipulation intents and cannot depend
 on hand landmarks or identify the tracking provider.
 
+## Proposed V3 platform (status: proposed — see ADR 0006)
+
+Neon Postgres (relational product data), Cloudflare R2 (photo objects, presigned direct
+upload), Better Auth (sessions in Postgres), and a Cloudflare Workers + Hono API layer
+enforcing workspace ownership on every write. Chosen for unattended availability,
+free-tier operation with application-enforced resource limits, the relational domain
+model, and transferable skills. Nothing in this section authorises dependencies or
+backend code before the approved V3 plan.
+
 ## Evolution strategy
 
 Architecture changes are triggered by real consumers or measured constraints:

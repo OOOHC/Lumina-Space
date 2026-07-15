@@ -41,6 +41,12 @@ Until V3, `public/photos/` remains flat local media accessed by URL through the
 - The provider and derivative topology remain deliberately undecided until they have a real
   occupant and measured requirements.
 
+## Addendum
+
+- 2026-07-15: Cloudflare R2 is the preferred V3 storage provider, subject to
+  implementation validation — see [ADR 0006](0006-v3-backend-platform.md). The decision
+  above is unchanged.
+
 ## Alternatives considered
 
 - **Store a separate upload inside each exhibition** — rejected because it duplicates media

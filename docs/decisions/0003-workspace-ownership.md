@@ -35,6 +35,12 @@ enforced server-side.
 - Every remotely persisted resource and storage policy must carry or derive workspace scope.
 - Membership exists minimally in V3; invites and multiple roles wait for V6.
 
+## Addendum
+
+- 2026-07-15: server-side enforcement will be realised by a Cloudflare Workers + Hono
+  API layer checking workspace ownership on every write — see
+  [ADR 0006](0006-v3-backend-platform.md). The decision above is unchanged.
+
 ## Alternatives considered
 
 - **Let users directly own resources and migrate later** — rejected because ownership and
