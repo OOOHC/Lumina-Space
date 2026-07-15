@@ -1,6 +1,8 @@
 import {
+  bigint,
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -115,9 +117,9 @@ export const photoAsset = pgTable(
     storageKey: text('storage_key').notNull(),
     contentType: text('content_type').notNull(),
     /** Bytes; used to enforce the workspace storage quota. */
-    sizeBytes: text('size_bytes').notNull(),
-    width: text('width').notNull(),
-    height: text('height').notNull(),
+    sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
     archivedAt: timestamp('archived_at'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },

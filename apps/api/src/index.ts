@@ -4,21 +4,10 @@ import { cors } from 'hono/cors';
 import { createAuth } from './auth';
 import { createDb } from './db/client';
 import { workspace } from './db/schema';
-
-/** Bindings provided via wrangler secrets / .dev.vars (never committed). */
-export interface Env {
-  DATABASE_URL: string;
-  BETTER_AUTH_SECRET: string;
-  /** Comma-separated allowed origins for the browser app. */
-  WEB_ORIGIN: string;
-}
+import { webOrigins, type Env } from './env';
+import { photos } from './routes/photos';
 
 const app = new Hono<{ Bindings: Env }>();
-
-/** Browser origins allowed by both CORS and Better Auth's origin check. */
-function webOrigins(env: Env): string[] {
-  return (env.WEB_ORIGIN ?? 'http://localhost:5174').split(',');
-}
 
 app.use('*', (c, next) => {
   return cors({
@@ -59,5 +48,8 @@ app.get('/api/me', async (c) => {
     workspace: ws ?? null,
   });
 });
+
+// Workspace photo library (ownership enforced inside via requireWorkspace).
+app.route('/api/photos', photos);
 
 export default app;
