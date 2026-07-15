@@ -4,5 +4,6 @@ dist/
 .env
 .env.*
 .claude/settings.local.json
+/.private/
 .DS_Store
 Thumbs.db
