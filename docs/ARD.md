@@ -16,7 +16,9 @@ last-updated: 2026-07-12
 
 ## Current architecture (as built, updated 2026-07-15)
 
-A single Vite + React + TypeScript application with the V1/V2 layers realised:
+An npm-workspaces repository (ADR 0004 executed 2026-07-15): `apps/web` holds the
+Vite + React + TypeScript viewer; `apps/api` arrives with V3's first server code. All
+`src/...` paths below are `apps/web/src/...`. The realised layers:
 
 - **scene/** — generic 3D runtime: `SceneCanvas` (renderer + WebGL detection),
   `CameraRig` (bounded orbit + reset), `Lighting`, `Environment` (parametric room).

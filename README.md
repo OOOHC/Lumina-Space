@@ -64,7 +64,8 @@ npm run build      # production build
 ```text
 docs/            product, architecture, design, roadmap, and development rules
 docs/decisions/  accepted architecture decision records and ADR template
-src/             current application source; future modules are created with real work
+apps/web/        the Vite + React viewer (ADR 0004 workspaces layout, 2026-07-15)
+apps/api/        Cloudflare Workers + Hono API — created with V3's first server code
 ```
 
 Directories such as `scene/`, `gallery/`, `input/`, `state/`, and `services/` are created

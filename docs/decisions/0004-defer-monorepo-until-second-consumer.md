@@ -37,6 +37,14 @@ the intent seam (ADR 0001), the `scene/`–`gallery/` split, and the `photoRepos
 function boundary. Everything else — folders, tooling, docs — is added the moment it has
 a real first occupant, never before.
 
+## Addendum
+
+- 2026-07-15: **Trigger 1 fired and the move was executed.** V3 (ADR 0006) introduces a
+  Cloudflare Workers + Hono API — a second concretely-planned application. The web app
+  moved to `apps/web/` under npm workspaces in the same change that opened V3. No
+  `packages/` and no monorepo tooling were added, exactly as this ADR prescribes. The
+  decision above is unchanged.
+
 ## Consequences
 
 - MVP stays maximally simple; no workspace indirection in imports, builds, or CI.

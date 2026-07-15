@@ -35,6 +35,13 @@ config, tooling, abstractions, or documents ahead of their first real occupant.
   completion checklist have been reviewed and explicitly approved.
 - Put unapproved ideas in `docs/PARKING_LOT.md`; never smuggle them into the current change.
 
+## Repository layout (since 2026-07-15, ADR 0004 executed)
+
+npm workspaces: `apps/web` (the Vite/React viewer — everything previously at the repo
+root) and, once V3 creates it, `apps/api` (Cloudflare Workers + Hono). Every `src/...`
+path in this file and in docs/ means `apps/web/src/...`. `packages/` still does not
+exist; it appears only with a second consumer of shared code.
+
 ## Dependency rules (binding — see docs/ARD.md)
 
 - `src/scene/` = generic 3D runtime. It must never import from `src/gallery/`.
