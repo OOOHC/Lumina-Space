@@ -20,7 +20,8 @@
 export type Intent =
   | { type: 'select-photo'; photoId: string }
   | { type: 'move-focus'; delta: -1 | 1 }
-  | { type: 'open-focused' }
+  | { type: 'open-focused' } // toggle: opens the focused print, or returns an open one
+
   | { type: 'back' }
   | { type: 'reset-view' }
   | { type: 'point-at'; x: number; y: number }

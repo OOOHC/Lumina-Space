@@ -23,8 +23,16 @@ export function applyIntent(intent: Intent): void {
       }
       break;
     case 'open-focused': {
+      // Toggle: the same physical action that pulls a photograph from the
+      // wall also returns it. This is what lets gesture (and Enter) complete
+      // the full journey instead of dead-ending inside the detail view —
+      // the owner's first field run showed gesture "dying" after one pinch.
+      if (store.selectedId !== null) {
+        store.select(null);
+        break;
+      }
       const focused = store.photos[store.focusedIndex];
-      if (store.selectedId === null && focused) {
+      if (focused) {
         store.select(focused.id);
       }
       break;

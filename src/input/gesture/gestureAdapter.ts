@@ -100,6 +100,7 @@ export async function startGestureAdapter({
   let lastSeen = performance.now();
   let lastPinchAt = 0;
   let pinchHeld = false;
+  let lastPose: ReturnType<typeof classifyHand>['pose'] = 'other';
 
   onStatus('ready');
 
@@ -108,6 +109,7 @@ export async function startGestureAdapter({
       engaged = false;
       pointer = null;
       pinchHeld = false;
+      lastPose = 'other';
       bus.emit({ type: 'point-lost' });
       onStatus('ready');
     }
@@ -132,6 +134,7 @@ export async function startGestureAdapter({
     if (!engaged) {
       if (reading.pose === 'open-palm') {
         engaged = true;
+        lastPose = 'open-palm';
         onStatus('engaged');
       }
       return;
@@ -144,7 +147,11 @@ export async function startGestureAdapter({
     }
 
     if (reading.pose === 'pinch') {
-      if (!pinchHeld && now - lastPinchAt > PINCH_REFRACTORY_MS) {
+      // A pinch acts only when reached FROM a pointing pose. Field finding
+      // (owner, 2026-07-15): a relaxing open palm can read as a pinch for a
+      // few frames, which selected a photograph the visitor never aimed at.
+      const cameFromPointing = lastPose === 'pointing';
+      if (!pinchHeld && cameFromPointing && now - lastPinchAt > PINCH_REFRACTORY_MS) {
         pinchHeld = true;
         lastPinchAt = now;
         bus.emit({ type: 'open-focused' });
@@ -152,6 +159,7 @@ export async function startGestureAdapter({
     } else {
       pinchHeld = false;
     }
+    lastPose = reading.pose;
   };
 
   rafId = requestAnimationFrame(frame);

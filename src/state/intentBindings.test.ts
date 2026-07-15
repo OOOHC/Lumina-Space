@@ -55,6 +55,15 @@ describe('intent bindings', () => {
     expect(state().selectedId).toBe(samplePhotos[1].id);
   });
 
+  it('open-focused returns an already-open photo to the wall (toggle)', () => {
+    applyIntent({ type: 'open-focused' });
+    expect(state().selectedId).toBe(samplePhotos[0].id);
+    applyIntent({ type: 'open-focused' });
+    expect(state().selectedId).toBeNull();
+    // Focus stays on the returned photo so the journey continues from there.
+    expect(state().focusedIndex).toBe(0);
+  });
+
   it('back closes the detail view and is a safe no-op otherwise', () => {
     applyIntent({ type: 'back' });
     expect(state().selectedId).toBeNull();

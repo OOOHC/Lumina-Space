@@ -3,6 +3,7 @@ import type {
   GestureAdapterHandle,
   GestureStatus,
 } from '../input/gesture/gestureAdapter';
+import { useGalleryStore } from '../state/galleryStore';
 
 const STATUS_LINE: Partial<Record<GestureStatus, string>> = {
   starting: 'Preparing the camera…',
@@ -20,7 +21,13 @@ const STATUS_LINE: Partial<Record<GestureStatus, string>> = {
 export function GestureControls() {
   const [status, setStatus] = useState<GestureStatus>('stopped');
   const handle = useRef<GestureAdapterHandle | null>(null);
+  const photoOpen = useGalleryStore((s) => s.selectedId !== null);
   const active = status === 'starting' || status === 'ready' || status === 'engaged';
+
+  const statusLine =
+    status === 'engaged' && photoOpen
+      ? 'Point, then pinch to return the photograph — or press Esc.'
+      : STATUS_LINE[status];
 
   useEffect(() => {
     return () => handle.current?.stop();
@@ -45,9 +52,9 @@ export function GestureControls() {
       >
         {active ? 'Disable gesture viewing' : 'Enable gesture viewing'}
       </button>
-      {STATUS_LINE[status] && (
+      {statusLine && (
         <p className="gesture-status" role="status">
-          {STATUS_LINE[status]}
+          {statusLine}
         </p>
       )}
     </div>
