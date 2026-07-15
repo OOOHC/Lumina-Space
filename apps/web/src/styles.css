@@ -212,6 +212,120 @@ button {
   color: var(--ink-faint);
 }
 
+/* ---- Account panel ---- */
+
+.account-corner {
+  position: fixed;
+  top: 4.5rem;
+  left: 2rem;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: start;
+  z-index: 10;
+}
+
+.account-summary {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.account-name {
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.account-workspace {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.account-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 11, 0.92);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+  padding: 2rem;
+}
+
+.account-panel {
+  width: min(22rem, 100%);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.account-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.account-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.account-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.account-form input {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--ink);
+}
+
+.account-form input:focus-visible {
+  outline: none;
+  border-color: var(--ink-faint);
+}
+
+.account-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #c98080;
+}
+
+.account-switch {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
+
+.link-button {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.link-button:hover,
+.link-button:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
 /* ---- 2D fallback gallery ---- */
 
 .fallback {

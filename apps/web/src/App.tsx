@@ -4,6 +4,7 @@ import { attachKeyboardAdapter } from './input/keyboardAdapter';
 import { isWebGLAvailable, SceneCanvas } from './scene/SceneCanvas';
 import { useGalleryStore } from './state/galleryStore';
 import { bindIntents } from './state/intentBindings';
+import { AccountPanel } from './ui/AccountPanel';
 import { GalleryFallback } from './ui/GalleryFallback';
 import { HudControls } from './ui/HudControls';
 import { PhotoDetailOverlay } from './ui/PhotoDetailOverlay';
@@ -71,6 +72,7 @@ export default function App() {
         </>
       )}
       {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}
+      <AccountPanel />
     </div>
   );
 }

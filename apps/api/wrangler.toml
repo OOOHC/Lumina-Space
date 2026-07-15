@@ -8,4 +8,4 @@ compatibility_flags = ["nodejs_compat"]
 port = 8787
 
 [vars]
-WEB_ORIGIN = "http://localhost:5173"
+WEB_ORIGIN = "http://localhost:5174,http://localhost:5173"
