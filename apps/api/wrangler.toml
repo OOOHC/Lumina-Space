@@ -1,6 +1,11 @@
 name = "lumina-api"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
+# better-auth uses node:crypto; nodejs_compat provides Node built-ins in the Worker.
+compatibility_flags = ["nodejs_compat"]
 
 [dev]
 port = 8787
+
+[vars]
+WEB_ORIGIN = "http://localhost:5173"

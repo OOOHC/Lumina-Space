@@ -16,9 +16,18 @@ last-updated: 2026-07-12
 
 ## Current architecture (as built, updated 2026-07-15)
 
-An npm-workspaces repository (ADR 0004 executed 2026-07-15): `apps/web` holds the
-Vite + React + TypeScript viewer; `apps/api` arrives with V3's first server code. All
-`src/...` paths below are `apps/web/src/...`. The realised layers:
+An npm-workspaces repository (ADR 0004 executed 2026-07-15). `apps/web` holds the
+Vite + React + TypeScript viewer; `apps/api` holds the Cloudflare Workers + Hono API
+(V3). All `src/...` paths below are `apps/web/src/...` unless prefixed. The realised
+layers:
+
+**apps/api (V3, in progress):** Hono on Workers; Drizzle schema for `user`, `session`,
+`account`, `verification` (Better Auth) plus `workspace` and `photo_asset` on Neon
+Postgres; Better Auth email/password at `/api/auth/*`, provisioning each user's personal
+workspace on sign-up (ADR 0003). Secrets via `.dev.vars` locally / `wrangler secret` in
+production. `nodejs_compat` enabled for `node:crypto`.
+
+**apps/web:**
 
 - **scene/** — generic 3D runtime: `SceneCanvas` (renderer + WebGL detection),
   `CameraRig` (bounded orbit + reset), `Lighting`, `Environment` (parametric room).
