@@ -326,6 +326,75 @@ button {
   outline: none;
 }
 
+/* ---- Photo library ---- */
+
+.library-panel {
+  width: min(56rem, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.library-header {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
+
+.library-storage {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+.library-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.library-upload {
+  cursor: pointer;
+}
+
+.library-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+
+.library-card {
+  display: grid;
+  gap: 0.4rem;
+  background: var(--surface);
+}
+
+.library-card img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+}
+
+.library-card-title {
+  padding: 0 0.6rem 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---- 2D fallback gallery ---- */
 
 .fallback {

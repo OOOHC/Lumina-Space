@@ -120,6 +120,8 @@ export const photoAsset = pgTable(
     sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
     width: integer('width').notNull(),
     height: integer('height').notNull(),
+    /** Null until the browser confirms all objects reached storage. */
+    uploadedAt: timestamp('uploaded_at'),
     archivedAt: timestamp('archived_at'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },

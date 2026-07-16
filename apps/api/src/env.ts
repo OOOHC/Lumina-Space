@@ -6,6 +6,10 @@ export interface Env {
   BETTER_AUTH_SECRET: string;
   /** Comma-separated allowed origins for the browser app. */
   WEB_ORIGIN: string;
+  R2_ACCOUNT_ID: string;
+  R2_BUCKET: string;
+  R2_ACCESS_KEY_ID: string;
+  R2_SECRET_ACCESS_KEY: string;
 }
 
 /** Browser origins allowed by both CORS and Better Auth's origin check. */
