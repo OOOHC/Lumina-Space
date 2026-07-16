@@ -13,6 +13,12 @@ interface GalleryState {
   focusedIndex: number;
   /** Incremented to ask the camera rig to return to its home view. */
   resetToken: number;
+  /**
+   * Incremented on DELIBERATE navigation (arrow keys, clicking a print) so
+   * the camera glides to that photograph's viewpoint. Continuous gesture
+   * pointing moves focus without walking the room.
+   */
+  walkToken: number;
   /** Non-null while the gallery is showing an exhibition draft preview. */
   preview: { title: string } | null;
   load: () => Promise<void>;
@@ -33,6 +39,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   selectedId: null,
   focusedIndex: 0,
   resetToken: 0,
+  walkToken: 0,
   preview: null,
 
   load: async () => {
@@ -84,7 +91,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     }
     const index = get().photos.findIndex((p) => p.id === id);
     if (index >= 0) {
-      set({ selectedId: id, focusedIndex: index });
+      set((s) => ({ selectedId: id, focusedIndex: index, walkToken: s.walkToken + 1 }));
     }
   },
 
@@ -92,7 +99,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     const { photos, focusedIndex } = get();
     if (photos.length === 0) return;
     const next = (focusedIndex + delta + photos.length) % photos.length;
-    set({ focusedIndex: next });
+    set((s) => ({ focusedIndex: next, walkToken: s.walkToken + 1 }));
   },
 
   setFocusedIndex: (index) => {

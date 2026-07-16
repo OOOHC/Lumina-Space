@@ -1,13 +1,23 @@
 ---
-status: approved v1.0
-last-updated: 2026-07-12
+status: approved v1.1 (owner amendment 2026-07-16: neutral architectural gallery)
+last-updated: 2026-07-16
 ---
 
 # DESIGN
 
 ## Visual North Star
 
-> A premium cinematic photography experience.
+> **Not a 3D room with photographs, but an architectural space designed to let
+> photography breathe.**
+
+The exhibition language is a **neutral architectural gallery** — calm, premium, and
+timeless, so that photographs of any style become the visual focus. It is neither a
+permanently dark cinematic space nor a white museum: avoid pure black rooms and pure
+white walls. Use soft architectural materials, subtle indirect lighting, natural
+shadows, and restrained reflections. The default template must serve landscape,
+portrait, documentary, street, and fine-art photography equally, favouring no genre.
+The gallery supports future exhibition themes, but ships with exactly one high-quality
+default template.
 
 Lumina Space should feel like entering a deliberately curated exhibition: quiet, tactile,
 spatial, and confident. The interface recedes when it is not needed. Photography supplies
@@ -35,7 +45,10 @@ excess gradients, glass-on-glass surfaces, and decorative telemetry.
 
 ## Visual identity
 
-- Use a restrained dark neutral environment that preserves perceived image colour.
+- Use a neutral architectural environment (warm greys, soft material tones) that
+  preserves perceived image colour — never pure black, never pure white.
+- Light photographs individually (subtle wash per print); let indirect light carry the
+  room so shadows feel natural and reflections stay restrained.
 - Let exhibition photographs create visual accents; do not impose a dominant brand tint.
 - Prefer editorial typography with generous spacing and short readable line lengths.
 - Use contrast, scale, and light before borders, badges, or ornamental containers.
@@ -44,7 +57,10 @@ excess gradients, glass-on-glass surfaces, and decorative telemetry.
 ## Spatial UX principles
 
 - A first-time visitor must immediately understand where to look and what can be selected.
-- Use constrained or guided movement before unrestricted first-person movement.
+- Movement is **guided waypoint gliding** (owner decision 2026-07-16): browsing carries
+  the visitor smoothly to a curated viewpoint in front of each photograph — walking the
+  exhibition, not piloting a game camera. Unrestricted first-person movement remains
+  out until evidence demands it.
 - Prevent camera clipping, accidental exits, disorientation, and dead ends.
 - Provide a calm and reliable Reset View action.
 - Detail view must preserve a clear path back to the exhibition.

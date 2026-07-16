@@ -1,14 +1,16 @@
 /**
- * Restrained exhibition lighting: even, dark-neutral, no shadows (V1
- * performance budget). Photograph surfaces supply the colour.
+ * Base light for the neutral architectural gallery (DESIGN v1.1): a soft
+ * indirect feel — hemisphere carrying warm ceiling bounce, gentle ambient,
+ * and two low-intensity directionals for natural modelling. Photograph
+ * accents come from PhotoWash lights placed by the gallery, not from here.
  */
 export function Lighting() {
   return (
     <>
-      <ambientLight intensity={0.85} />
-      <hemisphereLight args={['#3d3f48', '#16171b', 0.7]} />
-      <directionalLight position={[4, 4.5, 6]} intensity={0.9} />
-      <directionalLight position={[-4, 4.5, -6]} intensity={0.7} />
+      <ambientLight intensity={0.35} />
+      <hemisphereLight args={['#e8e2d6', '#5f5a52', 0.65]} />
+      <directionalLight position={[6, 5, 4]} intensity={0.5} />
+      <directionalLight position={[-5, 5, -4]} intensity={0.35} />
     </>
   );
 }

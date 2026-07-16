@@ -441,6 +441,14 @@ publishing. Exhibition configuration references workspace photo assets.
 > the stable link on another device, and run the production gesture journey on camera
 > hardware. Open Graph preview intentionally lands with deployment (it needs a served
 > HTML shell) and is tracked in PARKING_LOT until then.
+>
+> 2026-07-16 owner full-product review additionally approved and received an experience
+> refresh inside the V5 window: DESIGN v1.1 (neutral architectural gallery — warm
+> materials, per-photo wash lights, cove lighting, never pure black or white) and
+> guided waypoint gliding (browsing walks the visitor to a curated viewpoint per
+> photograph; gesture pointing highlights without walking). Remaining review items are
+> queued: gesture responsiveness tuning session, gesture pull-closer (V2.6 trigger now
+> fired), home "photograph space" (PRD amendment to draft), deployment.
 
 ### Product Goal
 

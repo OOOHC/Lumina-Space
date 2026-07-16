@@ -28,8 +28,8 @@ export function SceneCanvas({ children }: SceneCanvasProps) {
       camera={{ fov: 58, position: [0, 1.7, 5.2], near: 0.1, far: 80 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
-      <color attach="background" args={['#0b0b0f']} />
-      <fog attach="fog" args={['#0b0b0f', 18, 42]} />
+      <color attach="background" args={['#8f8b84']} />
+      <fog attach="fog" args={['#8f8b84', 22, 48]} />
       {children}
     </Canvas>
   );

@@ -106,6 +106,26 @@ button {
   left: 2rem;
 }
 
+/* Legibility over the light architectural gallery (DESIGN v1.1). */
+.hud-wordmark,
+.hud-hint,
+.account-name,
+.account-workspace,
+.public-title,
+.public-description {
+  text-shadow: 0 1px 10px rgba(24, 22, 19, 0.75);
+}
+
+.hud .text-button,
+.account-corner .text-button {
+  background: rgba(24, 23, 21, 0.55);
+}
+
+.hud-gesture .gesture-status {
+  background: rgba(24, 23, 21, 0.55);
+  padding: 0.35rem 0.6rem;
+}
+
 .hud-hint {
   position: absolute;
   bottom: 1.5rem;
