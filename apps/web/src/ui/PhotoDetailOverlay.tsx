@@ -14,7 +14,21 @@ interface PhotoDetailOverlayProps {
 export function PhotoDetailOverlay({ photo }: PhotoDetailOverlayProps) {
   const backButton = useRef<HTMLButtonElement>(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [inspectScale, setInspectScale] = useState(1);
   const onClose = () => intentBus.emit({ type: 'back' });
+
+  // V2.6 held-pinch inspect: the print grows with the thumb–index spread and
+  // always settles back to rest on release or tracking loss — a partial zoom
+  // can never latch.
+  useEffect(() => {
+    return intentBus.subscribe((intent) => {
+      if (intent.type === 'inspect') {
+        setInspectScale(1 + intent.magnitude * 1.35);
+      } else if (intent.type === 'inspect-end' || intent.type === 'point-lost') {
+        setInspectScale(1);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     backButton.current?.focus();
@@ -44,6 +58,7 @@ export function PhotoDetailOverlay({ photo }: PhotoDetailOverlayProps) {
             className="detail-image"
             src={photo.src}
             alt={photo.title}
+            style={{ transform: `scale(${inspectScale})` }}
             onError={() => setImageFailed(true)}
           />
         )}

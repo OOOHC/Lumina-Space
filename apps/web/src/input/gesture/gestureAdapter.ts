@@ -1,6 +1,11 @@
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { intentBus, type IntentBus } from '../intent';
-import { classifyHand, smoothPoint, type LandmarkPoint } from './handGestures';
+import {
+  classifyHand,
+  pinchSpread,
+  smoothPoint,
+  type LandmarkPoint,
+} from './handGestures';
 import {
   statusForCameraFailure,
   type GestureStatus,
@@ -35,6 +40,10 @@ const MODEL_URL =
 
 const DISENGAGE_AFTER_MS = 600; // hand missing this long → point-lost
 const PINCH_REFRACTORY_MS = 900; // one pinch = one selection
+const HOLD_MS = 400; // pinch held longer than this becomes an inspect, not a tap
+const INSPECT_RELEASE_SPREAD = 0.62; // fingers this far apart end the inspect
+const INSPECT_SPREAD_MIN = 0.08; // tight pinch → magnitude 0
+const INSPECT_SPREAD_MAX = 0.55; // wide-but-held pinch → magnitude 1
 
 export async function startGestureAdapter({
   onStatus,
@@ -98,16 +107,32 @@ export async function startGestureAdapter({
   let pointer: LandmarkPoint | null = null;
   let lastSeen = performance.now();
   let lastPinchAt = 0;
-  let pinchHeld = false;
+  let pinchActive = false;
+  let pinchStartAt = 0;
+  let inspecting = false;
   let lastPose: ReturnType<typeof classifyHand>['pose'] = 'other';
 
   onStatus('ready');
 
+  const endPinch = (now: number, asTap: boolean) => {
+    if (inspecting) {
+      bus.emit({ type: 'inspect-end' });
+    } else if (asTap) {
+      bus.emit({ type: 'open-focused' });
+    }
+    pinchActive = false;
+    inspecting = false;
+    lastPinchAt = now;
+  };
+
   const disengage = () => {
     if (engaged || pointer !== null) {
+      // Tracking loss can never latch a partial inspect (DESIGN step 6).
+      if (inspecting) bus.emit({ type: 'inspect-end' });
       engaged = false;
       pointer = null;
-      pinchHeld = false;
+      pinchActive = false;
+      inspecting = false;
       lastPose = 'other';
       bus.emit({ type: 'point-lost' });
       onStatus('ready');
@@ -145,18 +170,45 @@ export async function startGestureAdapter({
       bus.emit({ type: 'point-at', x: pointer.x, y: pointer.y });
     }
 
-    if (reading.pose === 'pinch') {
-      // A pinch acts only when reached FROM a pointing pose. Field finding
-      // (owner, 2026-07-15): a relaxing open palm can read as a pinch for a
-      // few frames, which selected a photograph the visitor never aimed at.
-      const cameFromPointing = lastPose === 'pointing';
-      if (!pinchHeld && cameFromPointing && now - lastPinchAt > PINCH_REFRACTORY_MS) {
-        pinchHeld = true;
-        lastPinchAt = now;
-        bus.emit({ type: 'open-focused' });
+    /**
+     * Pinch machine (V2.6): a pinch that RELEASES quickly is a tap —
+     * take/return the focused print (open-focused fires on release, so a
+     * budding hold is never mistaken for a tap). A pinch HELD past HOLD_MS
+     * becomes a continuous inspect whose magnitude follows the thumb–index
+     * spread, with exit hysteresis so widening fingers to zoom does not
+     * instantly end the pinch. Release settles everything (inspect-end).
+     */
+    const spread = pinchSpread(landmarks);
+    if (!pinchActive) {
+      // A pinch starts only from a pointing pose. Field finding (owner,
+      // 2026-07-15): a relaxing open palm reads as a pinch for a few frames.
+      if (
+        reading.pose === 'pinch' &&
+        lastPose === 'pointing' &&
+        now - lastPinchAt > PINCH_REFRACTORY_MS
+      ) {
+        pinchActive = true;
+        pinchStartAt = now;
+        inspecting = false;
       }
     } else {
-      pinchHeld = false;
+      const held = now - pinchStartAt;
+      if (!inspecting && held >= HOLD_MS) {
+        inspecting = true;
+      }
+      if (inspecting) {
+        const magnitude = Math.min(
+          1,
+          Math.max(0, (spread - INSPECT_SPREAD_MIN) / (INSPECT_SPREAD_MAX - INSPECT_SPREAD_MIN)),
+        );
+        bus.emit({ type: 'inspect', magnitude });
+      }
+      const released = inspecting
+        ? spread > INSPECT_RELEASE_SPREAD || reading.pose === 'open-palm'
+        : reading.pose !== 'pinch';
+      if (released) {
+        endPinch(now, !inspecting && held < HOLD_MS);
+      }
     }
     lastPose = reading.pose;
   };

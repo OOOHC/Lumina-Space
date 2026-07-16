@@ -62,6 +62,15 @@ export function classifyHand(lm: LandmarkPoint[]): HandReading {
   return { pose: 'other', pointer };
 }
 
+/**
+ * Thumb–index spread relative to hand scale. Below ~PINCH_RATIO reads as a
+ * pinch; during a held inspect the adapter tracks this value continuously
+ * (with its own exit hysteresis) instead of re-classifying the pose.
+ */
+export function pinchSpread(lm: LandmarkPoint[]): number {
+  return dist(lm[4], lm[8]) / handScale(lm);
+}
+
 /** Exponential smoothing for the pointer stream (reduces visible jitter). */
 export function smoothPoint(
   previous: LandmarkPoint | null,

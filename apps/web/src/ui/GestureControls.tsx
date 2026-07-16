@@ -29,7 +29,7 @@ export function GestureControls() {
 
   const statusLine =
     status === 'engaged' && photoOpen
-      ? 'Point, then pinch to return the photograph — or press Esc.'
+      ? 'Hold a pinch and spread your fingers to look closer · a quick pinch returns it · Esc.'
       : STATUS_LINE[status];
 
   useEffect(() => {

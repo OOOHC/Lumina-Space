@@ -25,7 +25,15 @@ export type Intent =
   | { type: 'back' }
   | { type: 'reset-view' }
   | { type: 'point-at'; x: number; y: number }
-  | { type: 'point-lost' };
+  | { type: 'point-lost' }
+  /**
+   * Continuous inspect stream (V2.6 "held pinch"): magnitude 0..1 expresses
+   * how far the inspection has been pulled open. The stream simply stops with
+   * `inspect-end`; consumers must settle back to a stable state on end or on
+   * silence — never latch a partial zoom.
+   */
+  | { type: 'inspect'; magnitude: number }
+  | { type: 'inspect-end' };
 
 export type IntentHandler = (intent: Intent) => void;
 

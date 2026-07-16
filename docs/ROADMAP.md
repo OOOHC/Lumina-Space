@@ -279,6 +279,13 @@ not become a gallery dependency. Raw landmarks do not cross the adapter boundary
 
 ## V2.6 — Floating Print and evidence-selected gesture (current — opened 2026-07-16)
 
+> 2026-07-17: the owner selected **held-pinch inspect** as the one advanced
+> interaction (short pinch = take/return unchanged; a pinch held past 400 ms becomes a
+> continuous inspect whose thumb–index spread drives the print's zoom, with exit
+> hysteresis; release or tracking loss always settles back — no partial zoom can
+> latch). Implemented locally; its success metric is the owner-present tuning session
+> plus the deferred multi-tester protocol. Not deployed yet.
+
 ### Product Goal
 
 Make the pulled-forward photograph a complete, teachable gesture viewing mode without

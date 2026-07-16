@@ -80,6 +80,20 @@ describe('intent bindings', () => {
     expect(state().resetToken).toBe(1);
   });
 
+  it('inspect with nothing open pulls out the focused photo', () => {
+    applyIntent({ type: 'move-focus', delta: 1 });
+    applyIntent({ type: 'inspect', magnitude: 0.4 });
+    expect(state().selectedId).toBe(samplePhotos[1].id);
+  });
+
+  it('inspect while a photo is open changes no state (zoom is UI-side)', () => {
+    applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });
+    applyIntent({ type: 'inspect', magnitude: 0.9 });
+    applyIntent({ type: 'inspect-end' });
+    expect(state().selectedId).toBe(samplePhotos[0].id);
+    expect(state().focusedIndex).toBe(0);
+  });
+
   it('every intent is inert outside the ready phase', () => {
     resetStore({ phase: 'loading' });
     applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });

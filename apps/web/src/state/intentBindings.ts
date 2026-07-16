@@ -47,6 +47,14 @@ export function applyIntent(intent: Intent): void {
         store.requestReset();
       }
       break;
+    case 'inspect':
+      // A held pinch with nothing open pulls the focused print out first;
+      // the zoom itself is consumed by the detail view, not by state.
+      if (store.selectedId === null) {
+        const focused = store.photos[store.focusedIndex];
+        if (focused) store.select(focused.id);
+      }
+      break;
   }
 }
 
