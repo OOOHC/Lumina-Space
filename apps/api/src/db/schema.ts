@@ -147,6 +147,82 @@ export const exhibitionPhoto = pgTable(
 );
 
 /**
+ * One publication per exhibition (V5): the stable identity a share link
+ * points at. The slug never changes across republishes; only
+ * `currentRevisionId` advances (a single UPDATE, so the advance is atomic
+ * even though neon-http offers no transactions).
+ */
+export const publication = pgTable(
+  'publication',
+  {
+    id: text('id').primaryKey(),
+    exhibitionId: text('exhibition_id')
+      .notNull()
+      .unique()
+      .references(() => exhibition.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull().unique(),
+    currentRevisionId: text('current_revision_id'),
+    status: text('status', { enum: ['published', 'unpublished'] })
+      .notNull()
+      .default('published'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [index('publication_workspace_idx').on(table.workspaceId)],
+);
+
+/**
+ * An immutable snapshot of a draft at publish time (ADR 0005). Rows are
+ * inserted and never updated; title/caption/dimensions are denormalised so
+ * the revision stays exactly what was published even if the library or the
+ * draft changes afterwards.
+ */
+export const publishedRevision = pgTable(
+  'published_revision',
+  {
+    id: text('id').primaryKey(),
+    publicationId: text('publication_id')
+      .notNull()
+      .references(() => publication.id, { onDelete: 'cascade' }),
+    seq: integer('seq').notNull(),
+    title: text('title').notNull(),
+    description: text('description'),
+    coverPhotoId: text('cover_photo_id'),
+    publishedAt: timestamp('published_at').notNull().defaultNow(),
+  },
+  (table) => [index('published_revision_publication_idx').on(table.publicationId)],
+);
+
+/**
+ * Snapshot membership. The FK to photo_asset has no cascade on purpose: it
+ * is the database backstop for ADR 0002 — bytes referenced by any published
+ * revision can never be deleted out from under a live exhibition.
+ */
+export const publishedRevisionPhoto = pgTable(
+  'published_revision_photo',
+  {
+    revisionId: text('revision_id')
+      .notNull()
+      .references(() => publishedRevision.id, { onDelete: 'cascade' }),
+    photoAssetId: text('photo_asset_id')
+      .notNull()
+      .references(() => photoAsset.id),
+    position: integer('position').notNull(),
+    title: text('title').notNull(),
+    caption: text('caption'),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
+  },
+  (table) => [
+    uniqueIndex('published_revision_photo_pk').on(table.revisionId, table.photoAssetId),
+    index('published_revision_photo_asset_idx').on(table.photoAssetId),
+  ],
+);
+
+/**
  * A photo asset is immutable (ADR 0002): replacing a photograph creates a new
  * row rather than overwriting `storage_key`, so published revisions keep
  * pointing at the bytes they were published with.

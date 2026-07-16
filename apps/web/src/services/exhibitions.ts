@@ -28,6 +28,14 @@ export interface Readiness {
   problems: ('missing-title' | 'no-photos' | 'archived')[];
 }
 
+export interface PublicationInfo {
+  slug: string;
+  status: 'published' | 'unpublished';
+  revisionSeq: number;
+  publishedAt: string;
+  draftChangedSincePublish: boolean;
+}
+
 export interface ExhibitionDraft {
   id: string;
   title: string;
@@ -36,6 +44,7 @@ export interface ExhibitionDraft {
   status: 'active' | 'archived';
   updatedAt: string;
   photos: ExhibitionPhoto[];
+  publication: PublicationInfo | null;
   readiness: Readiness;
 }
 
@@ -82,6 +91,18 @@ export async function saveExhibition(
   });
   if (!res.ok) return null;
   return (await res.json()) as ExhibitionDraft;
+}
+
+export async function publishExhibition(
+  id: string,
+): Promise<{ slug: string; revisionSeq: number } | null> {
+  const res = await api(`/api/exhibitions/${id}/publish`, { method: 'POST' });
+  if (!res.ok) return null;
+  return (await res.json()) as { slug: string; revisionSeq: number };
+}
+
+export async function unpublishExhibition(id: string): Promise<boolean> {
+  return (await api(`/api/exhibitions/${id}/unpublish`, { method: 'POST' })).ok;
 }
 
 export async function setExhibitionStatus(

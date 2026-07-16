@@ -498,6 +498,38 @@ button {
   outline: none;
 }
 
+.public-link {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.public-link:hover {
+  color: var(--ink);
+}
+
+.public-heading {
+  position: absolute;
+  top: 4.2rem;
+  left: 2rem;
+  max-width: 26rem;
+}
+
+.public-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: normal;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+.public-description {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
 .preview-banner {
   position: fixed;
   bottom: 4rem;

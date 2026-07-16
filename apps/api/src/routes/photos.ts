@@ -1,6 +1,11 @@
 import { and, desc, eq, gt, isNotNull, isNull, or } from 'drizzle-orm';
 import { Hono } from 'hono';
-import { exhibition, exhibitionPhoto, photoAsset } from '../db/schema';
+import {
+  exhibition,
+  exhibitionPhoto,
+  photoAsset,
+  publishedRevisionPhoto,
+} from '../db/schema';
 import type { AppEnv } from '../env';
 import { requireWorkspace } from '../middleware/requireWorkspace';
 import { rejectUpload, storageSummary } from '../quota';
@@ -195,6 +200,16 @@ photos.delete('/:id', async (c) => {
       { error: 'referenced', exhibitions: references.map((r) => r.title) },
       409,
     );
+  }
+  // ADR 0002/0005: bytes referenced by ANY published revision are protected
+  // forever — a published exhibition can never lose its photographs.
+  const published = await db
+    .select({ id: publishedRevisionPhoto.revisionId })
+    .from(publishedRevisionPhoto)
+    .where(eq(publishedRevisionPhoto.photoAssetId, id))
+    .limit(1);
+  if (published.length > 0) {
+    return c.json({ error: 'referenced-by-publication' }, 409);
   }
 
   await Promise.all(

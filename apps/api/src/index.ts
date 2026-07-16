@@ -7,6 +7,7 @@ import { workspace } from './db/schema';
 import { webOrigins, type Env } from './env';
 import { exhibitions } from './routes/exhibitions';
 import { photos } from './routes/photos';
+import { publicExhibitions, publishing } from './routes/publications';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -55,5 +56,9 @@ app.route('/api/photos', photos);
 
 // Exhibition drafts (V4) — same ownership rules, mutable until V5 publishes.
 app.route('/api/exhibitions', exhibitions);
+
+// Publishing (V5): snapshot to immutable revisions; stable public slugs.
+app.route('/api/exhibitions', publishing);
+app.route('/api/public/exhibitions', publicExhibitions);
 
 export default app;

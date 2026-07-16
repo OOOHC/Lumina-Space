@@ -1,6 +1,6 @@
 ---
 status: active
-last-updated: 2026-07-12
+last-updated: 2026-07-16
 ---
 
 # IDEA PARKING LOT
@@ -30,6 +30,16 @@ in PRD/ROADMAP, an approved plan, and an ADR when the decision is expensive to r
 - Visitor-to-photographer feedback
 - Exhibition reactions or comments
 - Return-visitor and narrative-path insights
+
+## Product polish (parked during V3–V5 field runs, 2026-07-16)
+
+- Library empty-state hint explaining that photographs are used by the exhibition
+  editor (owner confusion report: "isn't this an exhibition?")
+- `beforeunload` guard for unsaved editor keystrokes inside the autosave debounce window
+- Per-byte upload progress (XHR) once photograph sizes warrant it
+- EXIF extraction with GPS stripped/hidden by default, when a product surface needs it
+- Open Graph preview tags for `/e/:slug` — lands with deployment's HTML shell
+- Copy-link button beside the public URL in the editor
 
 ## Commercial candidates
 

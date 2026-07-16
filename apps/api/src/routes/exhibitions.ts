@@ -1,6 +1,12 @@
-import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
-import { exhibition, exhibitionPhoto, photoAsset } from '../db/schema';
+import {
+  exhibition,
+  exhibitionPhoto,
+  photoAsset,
+  publication,
+  publishedRevision,
+} from '../db/schema';
 import type { AppEnv, Env } from '../env';
 import { requireWorkspace } from '../middleware/requireWorkspace';
 import { publicationReadiness } from '../readiness';
@@ -58,6 +64,38 @@ async function exhibitionResponse(
     })),
   );
 
+  const [pub] = await db
+    .select({
+      slug: publication.slug,
+      status: publication.status,
+      currentRevisionId: publication.currentRevisionId,
+    })
+    .from(publication)
+    .where(eq(publication.exhibitionId, draft.id));
+
+  let publicationInfo: {
+    slug: string;
+    status: 'published' | 'unpublished';
+    revisionSeq: number;
+    publishedAt: Date;
+    draftChangedSincePublish: boolean;
+  } | null = null;
+  if (pub?.currentRevisionId) {
+    const [rev] = await db
+      .select({ seq: publishedRevision.seq, publishedAt: publishedRevision.publishedAt })
+      .from(publishedRevision)
+      .where(eq(publishedRevision.id, pub.currentRevisionId));
+    if (rev) {
+      publicationInfo = {
+        slug: pub.slug,
+        status: pub.status,
+        revisionSeq: rev.seq,
+        publishedAt: rev.publishedAt,
+        draftChangedSincePublish: draft.updatedAt > rev.publishedAt,
+      };
+    }
+  }
+
   return {
     id: draft.id,
     title: draft.title,
@@ -66,6 +104,7 @@ async function exhibitionResponse(
     status: draft.status,
     updatedAt: draft.updatedAt,
     photos,
+    publication: publicationInfo,
     readiness: publicationReadiness({
       title: draft.title,
       photoCount: photos.length,
@@ -189,7 +228,9 @@ exhibitions.put('/:id', async (c) => {
       description:
         body.description !== undefined ? body.description : draft.description,
       coverPhotoId,
-      updatedAt: new Date(),
+      // DB clock, not Worker clock: publishedAt also comes from the DB, and
+      // draftChangedSincePublish compares the two — mixed clocks skew it.
+      updatedAt: sql`now()`,
     })
     .where(eq(exhibition.id, draft.id));
 
@@ -202,7 +243,7 @@ exhibitions.post('/:id/archive', async (c) => {
   const workspaceId = c.get('workspaceId');
   const [updated] = await db
     .update(exhibition)
-    .set({ status: 'archived', updatedAt: new Date() })
+    .set({ status: 'archived', updatedAt: sql`now()` })
     .where(
       and(eq(exhibition.id, c.req.param('id')), eq(exhibition.workspaceId, workspaceId)),
     )
@@ -216,7 +257,7 @@ exhibitions.post('/:id/restore', async (c) => {
   const workspaceId = c.get('workspaceId');
   const [updated] = await db
     .update(exhibition)
-    .set({ status: 'active', updatedAt: new Date() })
+    .set({ status: 'active', updatedAt: sql`now()` })
     .where(
       and(eq(exhibition.id, c.req.param('id')), eq(exhibition.workspaceId, workspaceId)),
     )

@@ -46,15 +46,26 @@ production. `nodejs_compat` enabled for `node:crypto`.
 - **ui/** — status screens, HUD, detail overlay, 2D editorial fallback (small viewport
   or no WebGL), reduced-motion hook.
 
-- **apps/api** (V3) — Hono on Cloudflare Workers: Better Auth (email/password,
+- **apps/api** (V3–V5) — Hono on Cloudflare Workers: Better Auth (email/password,
   sessions in Postgres), `requireWorkspace` middleware deriving the workspace scope
   from the session on every protected route, the photo library (list / presigned
   direct-to-R2 upload with browser-rendered derivatives / ownership-checked
-  presigned reads / delete), and app-enforced storage quotas. Data: Neon Postgres
-  via Drizzle; objects: private R2 bucket keyed `{workspace}/{asset}/{kind}`.
+  presigned reads / reference-guarded delete), app-enforced storage quotas,
+  exhibition drafts (autosave, ordered photos, readiness), and publishing:
+  immutable revisions snapshotted per ADR 0005, a stable slug whose pointer
+  advances as the final single UPDATE (neon-http has no transactions — write
+  ordering provides the atomicity), an unauthenticated public read surface
+  (404 unknown / 410 unpublished, `Cache-Control: no-store`), and delete guards
+  covering both draft and published references. Data: Neon Postgres via Drizzle;
+  objects: private R2 bucket keyed `{workspace}/{asset}/{kind}`; all timestamps
+  compared across writes use the database clock (`now()`), never the Worker clock.
+- **apps/web public route** (V5) — `/e/:slug` is the anonymous shared-link viewer
+  (hand-rolled path check; a router library arrives with a third route). It reuses
+  the same scene/gallery/intent stack, including optional gesture viewing and the
+  2D fallback.
 
-Exhibition editing (V4), publishing (V5), and XR layers do not exist. Roadmap
-descriptions beyond V3 are requirements, not claims about current code.
+XR layers do not exist. Roadmap descriptions beyond V5 are requirements, not claims
+about current code.
 
 ## Planned application layers
 

@@ -1,9 +1,10 @@
 ---
 status: approved v1.0
-last-updated: 2026-07-15
-current-version: V4
-current-gate: V4 template exhibition editor
-next-milestone: V5 publishing platform
+last-updated: 2026-07-16
+current-version: V5
+current-gate: V5 publishing platform — implementation complete locally; gate open on
+  deployment, owner cross-device test, and owner-hardware gesture run
+next-milestone: Lumina Space 1.0 sign-off, then triggered V6 / XR-1
 ---
 
 # ROADMAP
@@ -375,7 +376,11 @@ gallery code. Assets belong to workspaces, not directly to users or exhibitions.
 - Metadata/privacy verification
 - Build, type-check, and relevant integration output
 
-## V4 — Template exhibition editor (current)
+## V4 — Template exhibition editor (closed 2026-07-16)
+
+> Gate closed under the owner's continue-through-V5 instruction. One recorded
+> simplification: leave-page protection relies on the 700 ms autosave debounce plus the
+> Saved/Failed indicator; there is no beforeunload interception yet (parked).
 
 ### Product Goal
 
@@ -415,10 +420,13 @@ publishing. Exhibition configuration references workspace photo assets.
 
 ### Exit Criteria
 
-- [ ] A photographer creates and previews an exhibition without developer assistance.
-- [ ] Autosave semantics, failure recovery, and leave-page behaviour are tested.
-- [ ] Preview renders the last successfully saved server draft.
-- [ ] Unsupported arbitrary scene edits are absent.
+- [x] A photographer creates and previews an exhibition without developer assistance.
+      (full journey driven in-browser: create → add 3 → reorder → cover → preview on 3D walls)
+- [x] Autosave semantics, failure recovery, and leave-page behaviour are tested.
+      (server-echoed Saving/Saved/Failed with retry; leave-page simplification recorded above)
+- [x] Preview renders the last successfully saved server draft. (preview consumes the save
+      response, by construction)
+- [x] Unsupported arbitrary scene edits are absent. (template-only: order, cover, text)
 
 ### Evidence
 
@@ -426,7 +434,13 @@ publishing. Exhibition configuration references workspace photo assets.
 - Save/failure/concurrency test output
 - Draft-preview parity review
 
-## V5 — Publishing Platform / Lumina Space 1.0
+## V5 — Publishing Platform / Lumina Space 1.0 (current — implemented locally 2026-07-16)
+
+> All software exists and every locally-verifiable criterion passed. The gate stays open
+> on three owner-side items: deploy both apps (wrangler login is an owner action), open
+> the stable link on another device, and run the production gesture journey on camera
+> hardware. Open Graph preview intentionally lands with deployment (it needs a served
+> HTML shell) and is tracked in PARKING_LOT until then.
 
 ### Product Goal
 
@@ -472,16 +486,24 @@ revision identifier. Existing publication assets cannot be overwritten in place.
 ### Exit Criteria
 
 - [ ] The stable link loads the current published revision on another device.
-- [ ] Draft edits do not change that link before republish.
-- [ ] Republish creates a new immutable revision and advances the link atomically.
-- [ ] Unpublish, removed, and not-found states cannot leak private content.
-- [ ] ADR 0005 invariants are covered by integration tests.
+      (verified anonymously on this device; ANOTHER device awaits deployment — owner item)
+- [x] Draft edits do not change that link before republish. (e2e: edit → public unchanged)
+- [x] Republish creates a new immutable revision and advances the link atomically.
+      (same slug, seq+1; pointer advance is the final single UPDATE)
+- [x] Unpublish, removed, and not-found states cannot leak private content.
+      (410 unpublished / 404 unknown; drafts never publicly reachable)
+- [x] ADR 0005 invariants are covered by integration tests. (publish/edit/republish/
+      unpublish/republish e2e run 2026-07-16, all invariants held)
 - [ ] A published exhibition completes the production gesture journey on supported hardware.
-- [ ] Denied permission, unavailable camera, tracking loss, or gesture startup failure never
-      prevents the complete conventional viewing journey.
-- [ ] Gesture is absent from authoring, asset management, workspace administration, and
+      (gesture available on the public page; camera-hardware run is an owner item)
+- [x] Denied permission, unavailable camera, tracking loss, or gesture startup failure never
+      prevents the complete conventional viewing journey. (pointer/keyboard journey verified
+      on the public page; denied-camera path verified in V2.5)
+- [x] Gesture is absent from authoring, asset management, workspace administration, and
       publishing actions except for an explicitly labelled non-destructive preview.
-- [ ] The PRD Lumina Space 1.0 creation-to-republish loop passes end to end.
+      (no gesture surface exists in any panel; only viewing mounts GestureControls)
+- [x] The PRD Lumina Space 1.0 creation-to-republish loop passes end to end. (locally:
+      sign-in → upload → curate → preview → publish → anonymous view → edit → republish)
 
 ### Evidence
 

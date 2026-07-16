@@ -4,8 +4,10 @@ import {
   draftToGalleryPhotos,
   getExhibition,
   listExhibitions,
+  publishExhibition,
   saveExhibition,
   setExhibitionStatus,
+  unpublishExhibition,
   type ExhibitionDraft,
   type ExhibitionListItem,
 } from '../services/exhibitions';
@@ -202,12 +204,56 @@ export function ExhibitionsPanel({ onClose }: ExhibitionsPanelProps) {
               </p>
               <p className="library-storage">
                 {draft.readiness.ready
-                  ? 'Ready to publish (publishing arrives in V5).'
+                  ? draft.publication
+                    ? draft.publication.status === 'unpublished'
+                      ? 'Unpublished — the link shows "no longer available".'
+                      : draft.publication.draftChangedSincePublish
+                        ? `Live: revision ${draft.publication.revisionSeq} — this draft has unpublished changes.`
+                        : `Live: revision ${draft.publication.revisionSeq} — up to date.`
+                    : 'Ready to publish.'
                   : `Needs ${draft.readiness.problems.map((p) => READINESS_TEXT[p]).join(' and ')}.`}
               </p>
+              {draft.publication && draft.publication.status === 'published' && (
+                <p className="library-storage">
+                  <a
+                    className="public-link"
+                    href={`/e/${draft.publication.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {window.location.origin}/e/{draft.publication.slug}
+                  </a>
+                </p>
+              )}
             </header>
 
             <div className="library-actions">
+              {draft.readiness.ready && (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    void publishExhibition(draft.id).then(() => void openDraft(draft.id))
+                  }
+                >
+                  {draft.publication?.status === 'published'
+                    ? draft.publication.draftChangedSincePublish
+                      ? 'Republish'
+                      : 'Published ✓'
+                    : 'Publish'}
+                </button>
+              )}
+              {draft.publication?.status === 'published' && (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    void unpublishExhibition(draft.id).then(() => void openDraft(draft.id))
+                  }
+                >
+                  Unpublish
+                </button>
+              )}
               <button
                 type="button"
                 className="text-button"

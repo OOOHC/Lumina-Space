@@ -18,6 +18,8 @@ interface GalleryState {
   load: () => Promise<void>;
   /** Swap the room's contents for a draft (V4 preview). */
   enterPreview: (photos: Photo[], title: string) => void;
+  /** Present a published exhibition (V5 public viewer) — no preview banner. */
+  present: (photos: Photo[]) => void;
   exitPreview: () => Promise<void>;
   select: (id: string | null) => void;
   moveFocus: (delta: number) => void;
@@ -57,6 +59,16 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       focusedIndex: 0,
     });
     get().requestReset();
+  },
+
+  present: (photos) => {
+    set({
+      photos,
+      phase: photos.length === 0 ? 'empty' : 'ready',
+      preview: null,
+      selectedId: null,
+      focusedIndex: 0,
+    });
   },
 
   exitPreview: async () => {
