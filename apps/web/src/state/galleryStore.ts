@@ -13,7 +13,12 @@ interface GalleryState {
   focusedIndex: number;
   /** Incremented to ask the camera rig to return to its home view. */
   resetToken: number;
+  /** Non-null while the gallery is showing an exhibition draft preview. */
+  preview: { title: string } | null;
   load: () => Promise<void>;
+  /** Swap the room's contents for a draft (V4 preview). */
+  enterPreview: (photos: Photo[], title: string) => void;
+  exitPreview: () => Promise<void>;
   select: (id: string | null) => void;
   moveFocus: (delta: number) => void;
   setFocusedIndex: (index: number) => void;
@@ -26,6 +31,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   selectedId: null,
   focusedIndex: 0,
   resetToken: 0,
+  preview: null,
 
   load: async () => {
     set({ phase: 'loading' });
@@ -39,6 +45,24 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     } catch {
       set({ phase: 'error' });
     }
+  },
+
+  enterPreview: (photos, title) => {
+    if (photos.length === 0) return;
+    set({
+      photos,
+      phase: 'ready',
+      preview: { title },
+      selectedId: null,
+      focusedIndex: 0,
+    });
+    get().requestReset();
+  },
+
+  exitPreview: async () => {
+    set({ preview: null });
+    await get().load();
+    get().requestReset();
   },
 
   select: (id) => {

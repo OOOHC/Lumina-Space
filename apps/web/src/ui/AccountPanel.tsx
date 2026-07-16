@@ -6,6 +6,7 @@ import {
   signUp,
   type Account,
 } from '../services/authClient';
+import { ExhibitionsPanel } from './ExhibitionsPanel';
 import { LibraryPanel } from './LibraryPanel';
 
 type PanelMode = 'closed' | 'sign-in' | 'sign-up';
@@ -23,6 +24,7 @@ export function AccountPanel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [exhibitionsOpen, setExhibitionsOpen] = useState(false);
 
   useEffect(() => {
     void getAccount()
@@ -80,6 +82,13 @@ export function AccountPanel() {
             <button
               type="button"
               className="text-button"
+              onClick={() => setExhibitionsOpen(true)}
+            >
+              Exhibitions
+            </button>
+            <button
+              type="button"
+              className="text-button"
               onClick={() => void onSignOut()}
               disabled={busy}
             >
@@ -98,6 +107,9 @@ export function AccountPanel() {
       </div>
 
       {libraryOpen && account && <LibraryPanel onClose={() => setLibraryOpen(false)} />}
+      {exhibitionsOpen && account && (
+        <ExhibitionsPanel onClose={() => setExhibitionsOpen(false)} />
+      )}
 
       {mode !== 'closed' && !account && (
         <div className="account-overlay" role="dialog" aria-modal="true" aria-label="Account">

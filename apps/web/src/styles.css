@@ -402,6 +402,119 @@ button {
   text-overflow: ellipsis;
 }
 
+/* ---- Exhibition editor ---- */
+
+.exhibit-title-input {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--ink);
+  min-width: 16rem;
+}
+
+.exhibit-title-main {
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  width: min(28rem, 100%);
+}
+
+.exhibit-description {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--ink-soft);
+  width: min(34rem, 100%);
+  resize: vertical;
+}
+
+.exhibit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.exhibit-row {
+  appearance: none;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.exhibit-row:hover,
+.exhibit-row:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink-faint);
+  outline: none;
+}
+
+.exhibit-row-meta {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.exhibit-section {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-weight: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.exhibit-card-actions {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0 0.6rem 0.6rem;
+}
+
+.exhibit-add {
+  appearance: none;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  padding: 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.exhibit-add:hover,
+.exhibit-add:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+.preview-banner {
+  position: fixed;
+  bottom: 4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(20, 21, 25, 0.95);
+  border: 1px solid var(--line);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  z-index: 15;
+}
+
 /* ---- 2D fallback gallery ---- */
 
 .fallback {

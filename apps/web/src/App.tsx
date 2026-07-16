@@ -33,6 +33,8 @@ export default function App() {
   const focusedIndex = useGalleryStore((s) => s.focusedIndex);
   const load = useGalleryStore((s) => s.load);
 
+  const preview = useGalleryStore((s) => s.preview);
+  const exitPreview = useGalleryStore((s) => s.exitPreview);
   const reducedMotion = usePrefersReducedMotion();
   const smallViewport = useSmallViewport();
   const webglAvailable = useMemo(() => isWebGLAvailable(), []);
@@ -72,6 +74,14 @@ export default function App() {
         </>
       )}
       {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}
+      {preview && (
+        <div className="preview-banner" role="status">
+          <span>Previewing draft — {preview.title}</span>
+          <button type="button" className="text-button" onClick={() => void exitPreview()}>
+            Exit preview
+          </button>
+        </div>
+      )}
       <AccountPanel />
     </div>
   );

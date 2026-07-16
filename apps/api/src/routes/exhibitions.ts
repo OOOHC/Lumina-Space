@@ -1,9 +1,10 @@
 import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { exhibition, exhibitionPhoto, photoAsset } from '../db/schema';
-import type { AppEnv } from '../env';
+import type { AppEnv, Env } from '../env';
 import { requireWorkspace } from '../middleware/requireWorkspace';
 import { publicationReadiness } from '../readiness';
+import { objectKey, presignGet } from '../r2';
 
 /**
  * Exhibition drafts (V4). The draft is mutable and private; publishing (V5)
@@ -30,9 +31,10 @@ async function loadExhibition(
 
 async function exhibitionResponse(
   db: AppEnv['Variables']['db'],
+  env: Env,
   draft: typeof exhibition.$inferSelect,
 ) {
-  const photos = await db
+  const rows = await db
     .select({
       id: photoAsset.id,
       title: photoAsset.title,
@@ -45,6 +47,16 @@ async function exhibitionResponse(
     .innerJoin(photoAsset, eq(exhibitionPhoto.photoAssetId, photoAsset.id))
     .where(eq(exhibitionPhoto.exhibitionId, draft.id))
     .orderBy(asc(exhibitionPhoto.position));
+
+  // Presigned URLs ride along because 3D texture loaders fetch anonymously
+  // (no cookies), so the credentialed /view redirect cannot serve them.
+  const photos = await Promise.all(
+    rows.map(async (row) => ({
+      ...row,
+      previewUrl: await presignGet(env, objectKey(draft.workspaceId, row.id, 'preview')),
+      thumbUrl: await presignGet(env, objectKey(draft.workspaceId, row.id, 'thumb')),
+    })),
+  );
 
   return {
     id: draft.id,
@@ -92,14 +104,14 @@ exhibitions.post('/', async (c) => {
   const id = crypto.randomUUID();
   await db.insert(exhibition).values({ id, workspaceId, title });
   const draft = await loadExhibition(db, workspaceId, id);
-  return c.json(await exhibitionResponse(db, draft!), 201);
+  return c.json(await exhibitionResponse(db, c.env, draft!), 201);
 });
 
 exhibitions.get('/:id', async (c) => {
   const db = c.get('db');
   const draft = await loadExhibition(db, c.get('workspaceId'), c.req.param('id'));
   if (!draft) return c.json({ error: 'not-found' }, 404);
-  return c.json(await exhibitionResponse(db, draft));
+  return c.json(await exhibitionResponse(db, c.env, draft));
 });
 
 interface SaveBody {
@@ -182,7 +194,7 @@ exhibitions.put('/:id', async (c) => {
     .where(eq(exhibition.id, draft.id));
 
   const saved = await loadExhibition(db, workspaceId, draft.id);
-  return c.json(await exhibitionResponse(db, saved!));
+  return c.json(await exhibitionResponse(db, c.env, saved!));
 });
 
 exhibitions.post('/:id/archive', async (c) => {
