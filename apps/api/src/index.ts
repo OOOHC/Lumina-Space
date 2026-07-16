@@ -5,6 +5,7 @@ import { createAuth } from './auth';
 import { createDb } from './db/client';
 import { workspace } from './db/schema';
 import { webOrigins, type Env } from './env';
+import { exhibitions } from './routes/exhibitions';
 import { photos } from './routes/photos';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -51,5 +52,8 @@ app.get('/api/me', async (c) => {
 
 // Workspace photo library (ownership enforced inside via requireWorkspace).
 app.route('/api/photos', photos);
+
+// Exhibition drafts (V4) — same ownership rules, mutable until V5 publishes.
+app.route('/api/exhibitions', exhibitions);
 
 export default app;

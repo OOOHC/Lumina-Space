@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, isNotNull, isNull, or } from 'drizzle-orm';
 import { Hono } from 'hono';
-import { photoAsset } from '../db/schema';
+import { exhibition, exhibitionPhoto, photoAsset } from '../db/schema';
 import type { AppEnv } from '../env';
 import { requireWorkspace } from '../middleware/requireWorkspace';
 import { rejectUpload, storageSummary } from '../quota';
@@ -166,10 +166,11 @@ photos.post('/:id/confirm', async (c) => {
 
 /**
  * Remove a photograph from the library: storage objects first, then the row,
- * so a failed storage delete cannot orphan invisible bytes. V3 allows a hard
- * delete because nothing can reference an asset yet; once V4 drafts and V5
- * published revisions exist, this handler MUST refuse (ADR 0002: deletion can
- * never invalidate a published revision) and archive instead.
+ * so a failed storage delete cannot orphan invisible bytes. Since V4, a
+ * photograph referenced by any exhibition draft REFUSES deletion (ADR 0002)
+ * — the reference check runs before anything is touched, and the FK without
+ * cascade is the database-level backstop. V5 published revisions extend the
+ * same rule to snapshots.
  */
 photos.delete('/:id', async (c) => {
   const db = c.get('db');
@@ -182,6 +183,18 @@ photos.delete('/:id', async (c) => {
     .where(and(eq(photoAsset.id, id), eq(photoAsset.workspaceId, workspaceId)));
   if (!asset) {
     return c.json({ error: 'not-found' }, 404);
+  }
+
+  const references = await db
+    .select({ title: exhibition.title })
+    .from(exhibitionPhoto)
+    .innerJoin(exhibition, eq(exhibitionPhoto.exhibitionId, exhibition.id))
+    .where(eq(exhibitionPhoto.photoAssetId, id));
+  if (references.length > 0) {
+    return c.json(
+      { error: 'referenced', exhibitions: references.map((r) => r.title) },
+      409,
+    );
   }
 
   await Promise.all(

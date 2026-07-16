@@ -100,6 +100,53 @@ export const workspace = pgTable(
 );
 
 /**
+ * An exhibition draft (V4). The row IS the mutable draft; publishing (V5)
+ * snapshots it into a separate immutable revision table per ADR 0005, so
+ * editing here can never change anything already live.
+ */
+export const exhibition = pgTable(
+  'exhibition',
+  {
+    id: text('id').primaryKey(),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    coverPhotoId: text('cover_photo_id'),
+    status: text('status', { enum: ['active', 'archived'] })
+      .notNull()
+      .default('active'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [index('exhibition_workspace_id_idx').on(table.workspaceId)],
+);
+
+/**
+ * Ordered membership of library photos in an exhibition draft. The FK to
+ * photo_asset deliberately has no cascade: it is the database-level backstop
+ * for ADR 0002's rule that referenced photographs cannot be deleted (the API
+ * refuses first; this refuses even if the API check ever regresses).
+ */
+export const exhibitionPhoto = pgTable(
+  'exhibition_photo',
+  {
+    exhibitionId: text('exhibition_id')
+      .notNull()
+      .references(() => exhibition.id, { onDelete: 'cascade' }),
+    photoAssetId: text('photo_asset_id')
+      .notNull()
+      .references(() => photoAsset.id),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    uniqueIndex('exhibition_photo_pk').on(table.exhibitionId, table.photoAssetId),
+    index('exhibition_photo_asset_idx').on(table.photoAssetId),
+  ],
+);
+
+/**
  * A photo asset is immutable (ADR 0002): replacing a photograph creates a new
  * row rather than overwriting `storage_key`, so published revisions keep
  * pointing at the bytes they were published with.
