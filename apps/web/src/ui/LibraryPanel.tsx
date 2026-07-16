@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  deletePhoto,
   listLibrary,
   photoViewUrl,
   uploadPhoto,
@@ -29,6 +30,18 @@ export function LibraryPanel({ onClose }: LibraryPanelProps) {
   useEffect(() => {
     void refresh();
   }, []);
+
+  const onRemove = async (id: string, title: string) => {
+    if (!window.confirm(`Remove “${title}” from your library? This cannot be undone.`)) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const ok = await deletePhoto(id);
+    if (!ok) setError('That photograph could not be removed.');
+    await refresh();
+    setBusy(false);
+  };
 
   const onFilesChosen = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -90,7 +103,17 @@ export function LibraryPanel({ onClose }: LibraryPanelProps) {
             {library.photos.map((photo) => (
               <li key={photo.id} className="library-card">
                 <img src={photoViewUrl(photo.id, 'thumb')} alt={photo.title} loading="lazy" />
-                <span className="library-card-title">{photo.title}</span>
+                <div className="library-card-row">
+                  <span className="library-card-title">{photo.title}</span>
+                  <button
+                    type="button"
+                    className="link-button"
+                    disabled={busy}
+                    onClick={() => void onRemove(photo.id, photo.title)}
+                  >
+                    Remove
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

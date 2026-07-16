@@ -14,7 +14,7 @@ app.use('*', (c, next) => {
     origin: webOrigins(c.env),
     credentials: true,
     allowHeaders: ['Content-Type'],
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   })(c, next);
 });
 

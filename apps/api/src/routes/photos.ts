@@ -4,7 +4,7 @@ import { photoAsset } from '../db/schema';
 import type { AppEnv } from '../env';
 import { requireWorkspace } from '../middleware/requireWorkspace';
 import { rejectUpload, storageSummary } from '../quota';
-import { objectKey, presignGet, presignPut, type ObjectKind } from '../r2';
+import { deleteObject, objectKey, presignGet, presignPut, type ObjectKind } from '../r2';
 
 /**
  * The workspace photo library (V3). Reads are scoped to the session's
@@ -162,6 +162,33 @@ photos.post('/:id/confirm', async (c) => {
     return c.json({ error: 'not-found' }, 404);
   }
   return c.json(updated);
+});
+
+/**
+ * Remove a photograph from the library: storage objects first, then the row,
+ * so a failed storage delete cannot orphan invisible bytes. V3 allows a hard
+ * delete because nothing can reference an asset yet; once V4 drafts and V5
+ * published revisions exist, this handler MUST refuse (ADR 0002: deletion can
+ * never invalidate a published revision) and archive instead.
+ */
+photos.delete('/:id', async (c) => {
+  const db = c.get('db');
+  const workspaceId = c.get('workspaceId');
+  const id = c.req.param('id');
+
+  const [asset] = await db
+    .select({ id: photoAsset.id })
+    .from(photoAsset)
+    .where(and(eq(photoAsset.id, id), eq(photoAsset.workspaceId, workspaceId)));
+  if (!asset) {
+    return c.json({ error: 'not-found' }, 404);
+  }
+
+  await Promise.all(
+    KINDS.map((kind) => deleteObject(c.env, objectKey(workspaceId, id, kind))),
+  );
+  await db.delete(photoAsset).where(eq(photoAsset.id, id));
+  return c.body(null, 204);
 });
 
 /** Private-bucket reads: redirect to a short-lived presigned GET. */

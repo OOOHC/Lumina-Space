@@ -48,3 +48,11 @@ export async function presignGet(env: Env, key: string): Promise<string> {
   );
   return signed.url;
 }
+
+/** Server-side delete (token permits object writes, which includes delete). */
+export async function deleteObject(env: Env, key: string): Promise<void> {
+  await client(env).fetch(
+    `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET}/${key}`,
+    { method: 'DELETE' },
+  );
+}

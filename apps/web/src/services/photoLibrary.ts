@@ -41,6 +41,15 @@ export function photoViewUrl(id: string, kind: 'original' | 'preview' | 'thumb')
   return `${API_BASE}/api/photos/${id}/view?kind=${kind}`;
 }
 
+/** Removes the photograph and its stored objects. V4 references will restrict this. */
+export async function deletePhoto(id: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/api/photos/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  return res.ok;
+}
+
 const UPLOAD_ERRORS: Record<string, string> = {
   'file-too-large': 'That file is larger than the 25 MB per-photograph limit.',
   'quota-exceeded': 'Your library is out of storage space.',

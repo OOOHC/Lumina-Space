@@ -385,8 +385,15 @@ button {
   display: block;
 }
 
-.library-card-title {
+.library-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0 0.6rem 0.6rem;
+}
+
+.library-card-title {
   font-size: 0.8rem;
   letter-spacing: 0.05em;
   color: var(--ink-soft);
