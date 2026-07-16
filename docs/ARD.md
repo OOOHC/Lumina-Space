@@ -46,8 +46,15 @@ production. `nodejs_compat` enabled for `node:crypto`.
 - **ui/** — status screens, HUD, detail overlay, 2D editorial fallback (small viewport
   or no WebGL), reduced-motion hook.
 
-Backend, gesture, and XR layers do not exist. Roadmap descriptions beyond V2 are
-requirements, not claims about current code.
+- **apps/api** (V3) — Hono on Cloudflare Workers: Better Auth (email/password,
+  sessions in Postgres), `requireWorkspace` middleware deriving the workspace scope
+  from the session on every protected route, the photo library (list / presigned
+  direct-to-R2 upload with browser-rendered derivatives / ownership-checked
+  presigned reads / delete), and app-enforced storage quotas. Data: Neon Postgres
+  via Drizzle; objects: private R2 bucket keyed `{workspace}/{asset}/{kind}`.
+
+Exhibition editing (V4), publishing (V5), and XR layers do not exist. Roadmap
+descriptions beyond V3 are requirements, not claims about current code.
 
 ## Planned application layers
 

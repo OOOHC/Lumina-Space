@@ -10,10 +10,10 @@ viewing experience, with future expansion to WebXR and native XR clients.
 
 | Field | Current |
 |---|---|
-| Current Version | V3 — Photographer account and photo library |
-| Current Gate | V3 photographer account and photo library |
-| Next Milestone | V4 — Template exhibition editor |
-| Current Status | Prototype milestone (V1–V2.5) closed 2026-07-15; V3 platform work starting (ADR 0006) |
+| Current Version | V4 — Template exhibition editor |
+| Current Gate | V4 template exhibition editor |
+| Next Milestone | V5 — Publishing Platform / Lumina Space 1.0 |
+| Current Status | V3 closed 2026-07-16 (accounts, workspaces, photo library on Neon + R2); V4 starting |
 
 Development must follow the active gate in [docs/ROADMAP.md](docs/ROADMAP.md). Later versions
 are direction, not permission to implement their features early.

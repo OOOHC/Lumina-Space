@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
 last-updated: 2026-07-15
-current-version: V3
-current-gate: V3 photographer account and photo library
-next-milestone: V4 template exhibition editor
+current-version: V4
+current-gate: V4 template exhibition editor
+next-milestone: V5 publishing platform
 ---
 
 # ROADMAP
@@ -320,7 +320,11 @@ the existing vocabulary cannot represent a validated product action.
 
 ## Product Milestone
 
-## V3 — Photographer account and photo library (current)
+## V3 — Photographer account and photo library (closed 2026-07-16)
+
+> Gate closed by owner 2026-07-16 with four recorded simplifications (progress
+> indicator not per-byte, manual retry, EXIF extraction deferred with GPS never
+> extracted, hard delete until references exist) — see `docs/evidence/V3.md`.
 
 ### Product Goal
 
@@ -359,10 +363,10 @@ gallery code. Assets belong to workspaces, not directly to users or exhibitions.
 
 ### Exit Criteria
 
-- [ ] One user cannot read or mutate another workspace's private assets.
-- [ ] Upload progress, failure, retry, metadata, and archive paths are tested.
-- [ ] Only currently required image derivatives are generated.
-- [ ] ADR 0002 is reviewed against the chosen provider before implementation approval.
+- [x] One user cannot read or mutate another workspace's private assets. (attack-tested 2026-07-16)
+- [x] Upload progress, failure, retry, metadata, and archive paths are tested. (with recorded simplifications)
+- [x] Only currently required image derivatives are generated. (exactly 3, browser-rendered)
+- [x] ADR 0002 is reviewed against the chosen provider before implementation approval. (ADR 0006 + addendum)
 
 ### Evidence
 
@@ -371,7 +375,7 @@ gallery code. Assets belong to workspaces, not directly to users or exhibitions.
 - Metadata/privacy verification
 - Build, type-check, and relevant integration output
 
-## V4 — Template exhibition editor
+## V4 — Template exhibition editor (current)
 
 ### Product Goal
 
