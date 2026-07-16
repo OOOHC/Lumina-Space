@@ -1,10 +1,9 @@
 ---
 status: approved v1.0
 last-updated: 2026-07-16
-current-version: V5
-current-gate: V5 publishing platform — implementation complete locally; gate open on
-  deployment, owner cross-device test, and owner-hardware gesture run
-next-milestone: Lumina Space 1.0 sign-off, then triggered V6 / XR-1
+current-version: V2.6
+current-gate: Spatial Reveal / Floating Print direct controls and unambiguous exit
+next-milestone: owner acceptance of Floating Print before gesture-vocabulary expansion
 ---
 
 # ROADMAP
@@ -278,41 +277,66 @@ not become a gallery dependency. Raw landmarks do not cross the adapter boundary
 - Supported-device/browser matrix
 - Performance comparison with gesture off and on
 
-## V2.6 — Evidence-selected advanced gesture (conditional)
+## V2.6 — Floating Print and evidence-selected gesture (current — opened 2026-07-16)
 
 ### Product Goal
 
-Extend gesture only if V2.5 identifies a valuable, teachable next action.
+Make the pulled-forward photograph a complete, teachable gesture viewing mode without
+turning gallery management or authoring into gesture-controlled work.
+
+Its signature moment is **Spatial Reveal / Floating Print**: the focused photograph behaves
+like a physical print that leaves the wall, becomes the stable portfolio-viewing object, and
+returns to its exact hanging position. This is an authored spatial transition, not a claim of
+camera-composited WebAR.
 
 ### User Journey
 
-Defined after V2.5 evidence; there is no pre-approved advanced gesture vocabulary.
+`open palm engage -> point -> one-hand pinch open -> open-palm horizontal swipe previous/next
+-> two-hand span zoom -> neutral re-arm -> point + one-hand pinch close -> gallery`
+
+Tracking loss at any point cancels continuous recognition and preserves the last stable view.
 
 ### Scope
 
-At most one coherent advanced interaction selected from evidence, potentially bounded zoom,
-rotation, back, or reset, plus calibration/filtering strictly needed for that interaction.
+- Detail-mode open-palm horizontal swipe mapped to existing previous/next focus intent
+- Bounded two-hand span zoom with `START / UPDATE / END / CANCEL`
+- Existing one-hand point-then-pinch toggle remains open/close, including after zoom
+- Neutral re-arm after two-hand zoom so an inward zoom cannot accidentally close the photo
+- Direction threshold, cancellation, cooldown, and restrained frame/light feedback
+- Spatial Reveal / Floating Print continuity for pointer, keyboard, touch, and gesture entry;
+  reduced-motion substitutes a short state fade
+- A lighter warm-grey focus edge whose intensity increases only during active pointing
+- No dwell timer is added to opening in the first trial; false-positive evidence may trigger
+  reconsideration later
 
 ### Explicit Non-goals
 
-- Implementing every candidate gesture
+- Rotation, grab, push-depth recognition, or an unbounded gesture vocabulary
+- Camera-composited WebAR, plane detection, or placing exhibitions in a physical room
+- Animating or depth-warping the photographer's image content
 - Gesture navigation without usability evidence
 - Making gesture mandatory
 
 ### Architecture Boundaries
 
-The V2 intent boundary remains unchanged unless a separately approved ADR demonstrates that
-the existing vocabulary cannot represent a validated product action.
+Swipe reuses device-neutral navigation intent and one-hand pinch reuses the open/close toggle.
+Only continuous zoom may add a lifecycle intent; MediaPipe landmarks and hand-count knowledge
+remain inside the adapter.
 
 ### Risks
 
-- Scope growing from one validated action into a gesture framework
+- One-hand pinch being confused with two-hand inward zoom
+- Swipe being triggered by ordinary pointing drift
 - Discoverability, fatigue, and false positives
 
 ### Exit Criteria
 
-- [ ] V2.5 evidence and an approved plan identify one next gesture and its success metric.
-- [ ] That interaction meets its predeclared metric without degrading fallback input.
+- [x] Owner review identified the coherent detail-view vocabulary and state boundaries.
+- [ ] Ten intended swipes in each direction achieve at least 9 correct moves with no skipped
+      photograph, and 60 seconds of pointing/zoom produces no unintended navigation.
+- [ ] Ten open-zoom-close journeys achieve at least 9 clean completions with no zoom gesture
+      interpreted as close.
+- [ ] Tracking loss cancels safely; pointer, keyboard, and touch remain complete fallbacks.
 
 ### Evidence
 
@@ -434,21 +458,27 @@ publishing. Exhibition configuration references workspace photo assets.
 - Save/failure/concurrency test output
 - Draft-preview parity review
 
-## V5 — Publishing Platform / Lumina Space 1.0 (current — implemented locally 2026-07-16)
+## V5 — Publishing Platform / Lumina Space 1.0 (closed 2026-07-16)
 
-> All software exists and every locally-verifiable criterion passed. The gate stays open
-> on three owner-side items: deploy both apps (wrangler login is an owner action), open
-> the stable link on another device, and run the production gesture journey on camera
-> hardware. Open Graph preview intentionally lands with deployment (it needs a served
-> HTML shell) and is tracked in PARKING_LOT until then.
+> All software exists and every locally-verifiable criterion passed. A production-shaped
+> local run now serves the Vite SPA and Hono API from one Cloudflare Worker; same-origin
+> authentication, anonymous publication reads, designed scene loading, and immutable
+> revision-derived Open Graph metadata were verified in-browser. The free production route
+> `lumina-space.lumina-exhibitions.workers.dev` and its R2 CORS origin are configured. The
+> public DNS, TLS, API, metadata, signed image delivery, production sign-in, authenticated
+> Workspace loading, real cover display, and publication status were verified. The owner
+> accepted the V5 product loop and opened V2.6. Another-device verification remains recorded
+> release evidence debt; advanced camera-hardware validation now belongs to V2.6.
 >
 > 2026-07-16 owner full-product review additionally approved and received an experience
 > refresh inside the V5 window: DESIGN v1.1 (neutral architectural gallery — warm
 > materials, per-photo wash lights, cove lighting, never pure black or white) and
 > guided waypoint gliding (browsing walks the visitor to a curated viewpoint per
 > photograph; gesture pointing highlights without walking). Remaining review items are
-> queued: gesture responsiveness tuning session, gesture pull-closer (V2.6 trigger now
-> fired), home "photograph space" (PRD amendment to draft), deployment.
+> queued outside this gate: gesture responsiveness plus Spatial Reveal / Floating Print
+> (V2.6 trigger), the
+> Photograph Space home, controlled curation templates, and a supervised Lumina Curator.
+> The latter three remain parked and authorise no current code.
 
 ### Product Goal
 
@@ -493,20 +523,22 @@ revision identifier. Existing publication assets cannot be overwritten in place.
 
 ### Exit Criteria
 
-- [ ] The stable link loads the current published revision on another device.
-      (verified anonymously on this device; ANOTHER device awaits deployment — owner item)
+- [x] The stable link loads the current published revision anonymously and the owner accepted
+      deferring the additional-device repeat as release evidence debt rather than blocking V2.6.
 - [x] Draft edits do not change that link before republish. (e2e: edit → public unchanged)
 - [x] Republish creates a new immutable revision and advances the link atomically.
       (same slug, seq+1; pointer advance is the final single UPDATE)
 - [x] Unpublish, removed, and not-found states cannot leak private content.
       (410 unpublished / 404 unknown; drafts never publicly reachable)
-- [x] ADR 0005 invariants are covered by integration tests. (publish/edit/republish/
-      unpublish/republish e2e run 2026-07-16, all invariants held)
-- [ ] A published exhibition completes the production gesture journey on supported hardware.
-      (gesture available on the public page; camera-hardware run is an owner item)
+- [x] ADR 0005 invariants are covered by repeatable integration-contract tests plus the
+      live provider run. (stable slug, immutable snapshot, pointer-last write order,
+      edit/republish, unpublish/removed, and republish restoration)
+- [x] The owner accepted V2.5 point/pinch as the published baseline; the incomplete advanced
+      gesture journey is explicitly transferred to the now-open V2.6 gate.
 - [x] Denied permission, unavailable camera, tracking loss, or gesture startup failure never
-      prevents the complete conventional viewing journey. (pointer/keyboard journey verified
-      on the public page; denied-camera path verified in V2.5)
+      prevents the complete conventional viewing journey. Camera denial, unavailable
+      hardware, and model startup failure now have distinct feedback; pointer/keyboard
+      remains complete.
 - [x] Gesture is absent from authoring, asset management, workspace administration, and
       publishing actions except for an explicitly labelled non-destructive preview.
       (no gesture surface exists in any panel; only viewing mounts GestureControls)

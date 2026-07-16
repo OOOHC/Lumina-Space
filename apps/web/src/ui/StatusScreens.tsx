@@ -11,6 +11,16 @@ export function LoadingScreen() {
   );
 }
 
+export function ScenePreparingOverlay() {
+  return (
+    <div className="scene-preparing" role="status" aria-live="polite">
+      <p className="status-wordmark">Lumina Space</p>
+      <p className="status-message">Lighting the exhibition…</p>
+      <span className="scene-preparing-line" aria-hidden="true" />
+    </div>
+  );
+}
+
 export function EmptyScreen() {
   return (
     <div className="status-screen">

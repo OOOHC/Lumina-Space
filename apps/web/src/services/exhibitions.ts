@@ -9,6 +9,8 @@ export interface ExhibitionListItem {
   title: string;
   status: 'active' | 'archived';
   updatedAt: string;
+  coverPhotoId: string | null;
+  publicationStatus: 'published' | 'unpublished' | null;
   photoCount: number;
 }
 

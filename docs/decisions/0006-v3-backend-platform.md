@@ -1,6 +1,6 @@
 # 0006 — V3 backend platform: Neon, Cloudflare R2, Better Auth, Workers + Hono
 
-- Status: **proposed** — becomes accepted only when the V3 implementation plan is approved
+- Status: accepted
 - Date: 2026-07-15
 
 ## Context
@@ -84,6 +84,17 @@ Derivatives (thumbnail / preview) generated asynchronously per ADR 0002
 - Per-workspace storage quotas and upload size caps are part of the V3 API scope from
   the first upload, not a later hardening step.
 - The ORM decision is deliberately deferred to the V3 implementation plan.
+
+## Addenda
+
+- 2026-07-15: the V3 implementation plan was approved and this decision became accepted.
+  Drizzle ORM was selected and the stack was implemented under npm workspaces.
+- 2026-07-16: V5 uses one Cloudflare Worker deployment for both the built Vite SPA and
+  Hono API. Static assets are edge-served; `/api/*` and `/e/*` enter the Worker first.
+  Production therefore has one browser origin for sessions and public links. Better Auth
+  derives and trusts that same origin per request; only explicitly configured localhost
+  origins are added during development. The final deployed origin must still be added to
+  the private R2 bucket CORS policy before the release gate can close.
 
 ## Alternatives considered
 

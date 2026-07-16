@@ -32,6 +32,18 @@ describe('galleryLayout', () => {
     }
   });
 
+  it('keeps exhibitions of up to six photographs on the visible primary wall', () => {
+    for (let count = 1; count <= 6; count += 1) {
+      const placements = galleryLayout(count);
+      expect(new Set(placements.map((p) => p.position[2])).size).toBe(1);
+      expect(placements.every((p) => p.rotationY === 0)).toBe(true);
+    }
+  });
+
+  it('uses multiple walls once a show outgrows the primary wall', () => {
+    expect(new Set(galleryLayout(7).map((p) => p.rotationY)).size).toBeGreaterThan(1);
+  });
+
   it('leaves at least a frame width between neighbouring photos', () => {
     const placements = galleryLayout(12);
     for (let i = 0; i < placements.length; i++) {

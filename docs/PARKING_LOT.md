@@ -22,7 +22,16 @@ in PRD/ROADMAP, an approved plan, and an ADR when the decision is expensive to r
 
 ## Creation and discovery candidates
 
-- AI-assisted curation
+- **Photograph Space home:** an editorial entry surface for owner-approved featured
+  exhibitions, collections, and photographers. It requires an explicit public-visibility
+  and moderation model; unlisted V5 publications must never appear automatically.
+- **Lumina Curator:** a supervised curation assistant that proposes controlled-template
+  arrangements with reasons, previews, and reversible choices. The photographer approves
+  every persisted change; the agent cannot publish, delete, invite, or freely place XYZ
+  objects. Consider only after V5 closes and the current editor/scene evidence is reviewed.
+- **Permissioned curator-agent collaboration:** only after real V6 human collaboration
+  exists. Agent discovery or A2A-style exchange must be user-invited, scoped, auditable,
+  and unable to expose private photographs. No autonomous open-Internet social agent.
 - Portfolio analytics
 - Public discovery and SEO expansion
 - Exhibition duplication
@@ -38,7 +47,6 @@ in PRD/ROADMAP, an approved plan, and an ADR when the decision is expensive to r
 - `beforeunload` guard for unsaved editor keystrokes inside the autosave debounce window
 - Per-byte upload progress (XHR) once photograph sizes warrant it
 - EXIF extraction with GPS stripped/hidden by default, when a product surface needs it
-- Open Graph preview tags for `/e/:slug` — lands with deployment's HTML shell
 - Copy-link button beside the public URL in the editor
 
 ## Commercial candidates

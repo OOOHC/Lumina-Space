@@ -1,5 +1,6 @@
-import { Canvas } from '@react-three/fiber';
-import type { ReactNode } from 'react';
+import { useProgress } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 /** Feature-detects WebGL so the application can choose the 2D fallback. */
 export function isWebGLAvailable(): boolean {
@@ -15,13 +16,32 @@ export function isWebGLAvailable(): boolean {
 
 interface SceneCanvasProps {
   children: ReactNode;
+  onReady?: () => void;
+  readinessKey?: string;
+}
+
+function SceneReadyReporter({ onReady, readinessKey }: Omit<SceneCanvasProps, 'children'>) {
+  const { active, progress } = useProgress();
+  const reported = useRef(false);
+
+  useEffect(() => {
+    reported.current = false;
+  }, [readinessKey]);
+
+  useFrame(() => {
+    if (!reported.current && !active && progress >= 100) {
+      reported.current = true;
+      onReady?.();
+    }
+  });
+  return null;
 }
 
 /**
  * Generic 3D canvas: renderer configuration, camera defaults, atmosphere.
  * Content is supplied by the caller; this module knows nothing about it.
  */
-export function SceneCanvas({ children }: SceneCanvasProps) {
+export function SceneCanvas({ children, onReady, readinessKey }: SceneCanvasProps) {
   return (
     <Canvas
       dpr={[1, 2]}
@@ -30,6 +50,7 @@ export function SceneCanvas({ children }: SceneCanvasProps) {
     >
       <color attach="background" args={['#8f8b84']} />
       <fog attach="fog" args={['#8f8b84', 22, 48]} />
+      <SceneReadyReporter onReady={onReady} readinessKey={readinessKey} />
       {children}
     </Canvas>
   );

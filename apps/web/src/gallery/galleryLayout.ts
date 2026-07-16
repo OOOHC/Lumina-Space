@@ -35,6 +35,7 @@ interface Wall {
 
 const WALL_GAP = 0.06; // stand-off from the wall surface to avoid z-fighting
 const END_MARGIN = 2; // clear space kept at each end of a wall
+const PRIMARY_WALL_LIMIT = 6;
 
 /**
  * Evenly distributes `count` photographs along the four walls of the room,
@@ -58,18 +59,28 @@ export function galleryLayout(count: number, room: RoomSpec = GALLERY_ROOM): Pho
     { length: room.depth, toWorld: (t) => [hw - WALL_GAP, t], rotationY: -Math.PI / 2 },
   ];
 
-  // Distribute count proportionally to wall length (largest-remainder method).
-  const totalLength = walls.reduce((sum, w) => sum + w.length, 0);
-  const exact = walls.map((w) => (count * w.length) / totalLength);
-  const counts = exact.map(Math.floor);
-  let remaining = count - counts.reduce((a, b) => a + b, 0);
-  const byRemainder = exact
-    .map((value, index) => ({ index, frac: value - Math.floor(value) }))
-    .sort((a, b) => b.frac - a.frac);
-  for (const { index } of byRemainder) {
-    if (remaining === 0) break;
-    counts[index] += 1;
-    remaining -= 1;
+  // A small show needs an immediately legible opening composition. Splitting
+  // three or four prints across hidden side/back walls made loaded photographs
+  // look missing from the home viewpoint. Larger shows still use the whole room.
+  const counts = [0, 0, 0, 0];
+  if (count <= PRIMARY_WALL_LIMIT) {
+    counts[0] = count;
+  } else {
+    // Distribute proportionally to wall length (largest-remainder method).
+    const totalLength = walls.reduce((sum, w) => sum + w.length, 0);
+    const exact = walls.map((w) => (count * w.length) / totalLength);
+    exact.forEach((value, index) => {
+      counts[index] = Math.floor(value);
+    });
+    let remaining = count - counts.reduce((a, b) => a + b, 0);
+    const byRemainder = exact
+      .map((value, index) => ({ index, frac: value - Math.floor(value) }))
+      .sort((a, b) => b.frac - a.frac);
+    for (const { index } of byRemainder) {
+      if (remaining === 0) break;
+      counts[index] += 1;
+      remaining -= 1;
+    }
   }
 
   const placements: PhotoPlacement[] = [];

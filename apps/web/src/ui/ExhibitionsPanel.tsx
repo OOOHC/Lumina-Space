@@ -16,6 +16,7 @@ import { useGalleryStore } from '../state/galleryStore';
 
 interface ExhibitionsPanelProps {
   onClose: () => void;
+  initialExhibitionId?: string | null;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
@@ -32,7 +33,7 @@ const READINESS_TEXT: Record<string, string> = {
  * debounced; the Saving/Saved/Failed line always reflects the server truth
  * because every save echoes back the persisted state.
  */
-export function ExhibitionsPanel({ onClose }: ExhibitionsPanelProps) {
+export function ExhibitionsPanel({ onClose, initialExhibitionId }: ExhibitionsPanelProps) {
   const [items, setItems] = useState<ExhibitionListItem[] | null>(null);
   const [draft, setDraft] = useState<ExhibitionDraft | null>(null);
   const [library, setLibrary] = useState<Library | null>(null);
@@ -49,6 +50,12 @@ export function ExhibitionsPanel({ onClose }: ExhibitionsPanelProps) {
     void refreshList();
     void listLibrary().then(setLibrary);
   }, [refreshList]);
+
+  useEffect(() => {
+    if (!initialExhibitionId) return;
+    setSaveState('idle');
+    void getExhibition(initialExhibitionId).then(setDraft);
+  }, [initialExhibitionId]);
 
   // Debounced autosave for text fields; photo operations save immediately.
   const queueSave = (patch: Parameters<typeof saveExhibition>[1]) => {
@@ -274,12 +281,20 @@ export function ExhibitionsPanel({ onClose }: ExhibitionsPanelProps) {
               >
                 {draft.status === 'archived' ? 'Restore' : 'Archive'}
               </button>
-              <button type="button" className="text-button" onClick={() => setDraft(null)}>
-                Back
-              </button>
-              <button type="button" className="text-button" onClick={onClose}>
-                Close
-              </button>
+              {initialExhibitionId ? (
+                <button type="button" className="text-button" onClick={onClose}>
+                  Back to workspace
+                </button>
+              ) : (
+                <>
+                  <button type="button" className="text-button" onClick={() => setDraft(null)}>
+                    Back
+                  </button>
+                  <button type="button" className="text-button" onClick={onClose}>
+                    Close
+                  </button>
+                </>
+              )}
             </div>
 
             <h3 className="exhibit-section">In this exhibition — walls hang in this order</h3>

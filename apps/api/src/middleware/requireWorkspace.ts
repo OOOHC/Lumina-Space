@@ -14,7 +14,12 @@ import { webOrigins, type AppEnv } from '../env';
  */
 export const requireWorkspace = createMiddleware<AppEnv>(async (c, next) => {
   const db = createDb(c.env.DATABASE_URL);
-  const auth = createAuth(db, c.env.BETTER_AUTH_SECRET, webOrigins(c.env));
+  const auth = createAuth(
+    db,
+    c.env.BETTER_AUTH_SECRET,
+    webOrigins(c.env, c.req.url),
+    new URL(c.req.url).origin,
+  );
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session) {
     return c.json({ error: 'unauthenticated' }, 401);

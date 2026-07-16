@@ -10,10 +10,10 @@ viewing experience, with future expansion to WebXR and native XR clients.
 
 | Field | Current |
 |---|---|
-| Current Version | V5 — Publishing Platform / Lumina Space 1.0 |
-| Current Gate | V5 implemented locally; open on deployment + owner cross-device/gesture runs |
-| Next Milestone | Lumina Space 1.0 sign-off → triggered V6 / XR-1 |
-| Current Status | V4 closed 2026-07-16 (editor + 3D draft preview); V5 publishing verified locally end to end |
+| Current Version | V2.6 — Floating Print and evidence-selected gesture |
+| Current Gate | Direct Floating Print controls, obvious exit, and owner acceptance before gesture expansion |
+| Next Milestone | Gesture vocabulary and reliability review after Floating Print acceptance |
+| Current Status | Lumina Space 1.0 / V5 closed and live; V2.6 active locally |
 
 Development must follow the active gate in [docs/ROADMAP.md](docs/ROADMAP.md). Later versions
 are direction, not permission to implement their features early.
@@ -56,8 +56,16 @@ Requires Node.js >= 20.
 npm install
 npm run dev        # start development server
 npm run typecheck  # TypeScript validation
-npm run build      # production build
+npm test           # all colocated tests
+npm run build      # web build + Cloudflare Worker dry-run
+npm run deploy     # owner-approved Cloudflare deployment; never run implicitly
 ```
+
+Production is one Cloudflare Worker: it serves the Vite SPA and Hono API on the same
+origin. Deployment still requires the owner to authenticate Wrangler, provision secrets,
+allow the final origin in R2 CORS, then complete the V5 cross-device and camera-hardware
+checks. Better Auth derives the deployed same origin per request. See
+[docs/evidence/V5.md](docs/evidence/V5.md).
 
 ## Repository layout
 

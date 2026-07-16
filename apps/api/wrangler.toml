@@ -1,11 +1,23 @@
-name = "lumina-api"
+name = "lumina-space"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 # better-auth uses node:crypto; nodejs_compat provides Node built-ins in the Worker.
 compatibility_flags = ["nodejs_compat"]
+# The owner-approved free production route stays public; per-deployment preview
+# hostnames remain off so deploys cannot expand the public surface implicitly.
+workers_dev = true
+preview_urls = false
 
 [dev]
 port = 8787
 
 [vars]
-WEB_ORIGIN = "http://localhost:5174,http://localhost:5173"
+WEB_ORIGIN = "http://localhost:5174,http://localhost:5173,http://localhost:8788,http://127.0.0.1:8788"
+
+# One production origin: static Vite assets are served directly at the edge;
+# API and exhibition share routes enter the Worker first.
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = [ "/api/*", "/health", "/e/*" ]

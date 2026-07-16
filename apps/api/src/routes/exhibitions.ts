@@ -122,12 +122,15 @@ exhibitions.get('/', async (c) => {
       title: exhibition.title,
       status: exhibition.status,
       updatedAt: exhibition.updatedAt,
+      coverPhotoId: exhibition.coverPhotoId,
+      publicationStatus: publication.status,
       photoCount: count(exhibitionPhoto.photoAssetId),
     })
     .from(exhibition)
     .leftJoin(exhibitionPhoto, eq(exhibitionPhoto.exhibitionId, exhibition.id))
+    .leftJoin(publication, eq(publication.exhibitionId, exhibition.id))
     .where(eq(exhibition.workspaceId, workspaceId))
-    .groupBy(exhibition.id)
+    .groupBy(exhibition.id, publication.id)
     .orderBy(desc(exhibition.updatedAt));
   return c.json({ exhibitions: rows });
 });

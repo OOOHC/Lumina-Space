@@ -79,9 +79,13 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   },
 
   exitPreview: async () => {
-    set({ preview: null });
-    await get().load();
-    get().requestReset();
+    set({
+      preview: null,
+      photos: [],
+      phase: 'loading',
+      selectedId: null,
+      focusedIndex: 0,
+    });
   },
 
   select: (id) => {

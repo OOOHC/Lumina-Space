@@ -65,12 +65,15 @@ exist; it appears only with a second consumer of shared code.
 - The first Zustand store, colocated Vitest tests, Three / React Three Fiber / Drei, and the
   first MediaPipe provider now have real occupants. Split, wrap, or generalise them only when
   a current requirement demonstrates the need.
-- `src/config.ts` remains deferred until runtime configuration has a real first consumer.
+- `src/config.ts` now owns the API base: port 8787 in Vite development and same-origin in
+  production. Do not turn it into a general speculative configuration layer.
 - WebXR support remains deferred until triggered XR-1. Lint tooling remains deferred until
   standards and a package script are approved.
-- Remote auth, storage, database, and upload dependencies wait for V3.
+- Remote auth, storage, database, upload, editing, and publishing dependencies are active
+  through V5; extend them only under an approved later milestone.
 - Workspace collaboration waits for V6; enterprise systems wait for a triggered V7.
-- `apps/` + `packages/` only under ADR 0004 triggers.
+- `apps/` exists because ADR 0004's second-application trigger fired. `packages/` still
+  waits for a second real shared-code consumer.
 - `scripts/`, `e2e/`, `CHANGELOG.md`, `CONTRIBUTING.md`, issue/PR templates, additional
   room templates, analytics, and general plugin systems.
 
@@ -184,3 +187,10 @@ dependencies, or begin feature work without an approved plan.
 **Never push to any git remote unless the owner explicitly instructs it in the current
 conversation.** Local commits accompany implementation handoffs as usual; pushing to
 GitHub is always a separate, owner-initiated action.
+
+**Local first, deploy only after owner approval.** The product now exists in two
+environments: local development (`npm run dev` + `wrangler dev`) and the deployed
+production Worker. Every change is implemented and verified LOCALLY first. `npm run
+deploy` (or any `wrangler deploy`) runs only after the owner has reviewed the local
+result and explicitly approved deploying it. Never deploy as a side effect of building
+or testing; never deploy unreviewed changes because they "seem safe".

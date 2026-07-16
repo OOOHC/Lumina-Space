@@ -10,7 +10,10 @@ const STATUS_LINE: Partial<Record<GestureStatus, string>> = {
   ready: 'Raise an open palm to engage.',
   engaged: 'Point at a photograph · pinch to pull it from the wall.',
   denied: 'Camera permission was declined — pointer and keyboard remain fully available.',
-  unavailable: 'Gesture viewing isn’t available on this device — pointer and keyboard remain fully available.',
+  'camera-unavailable':
+    'No available camera was found — close other camera apps or continue with pointer and keyboard.',
+  'model-unavailable':
+    'Hand tracking could not start — check the connection or continue with pointer and keyboard.',
 };
 
 /**

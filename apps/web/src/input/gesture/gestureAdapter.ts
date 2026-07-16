@@ -1,6 +1,12 @@
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { intentBus, type IntentBus } from '../intent';
 import { classifyHand, smoothPoint, type LandmarkPoint } from './handGestures';
+import {
+  statusForCameraFailure,
+  type GestureStatus,
+} from './gestureStatus';
+
+export type { GestureStatus } from './gestureStatus';
 
 /**
  * Gesture input adapter (ADR 0001, ARD rule 3). MediaPipe hand tracking in,
@@ -12,14 +18,6 @@ import { classifyHand, smoothPoint, type LandmarkPoint } from './handGestures';
  * nothing acts on the gallery until the visitor shows an OPEN PALM. Losing
  * the hand disengages after a short grace period and cancels cleanly.
  */
-
-export type GestureStatus =
-  | 'starting'
-  | 'ready' // camera live, waiting for open palm
-  | 'engaged' // open palm seen; pointing and pinching are active
-  | 'denied' // camera permission refused
-  | 'unavailable' // no camera or model failed to load
-  | 'stopped';
 
 export interface GestureAdapterHandle {
   stop: () => void;
@@ -62,15 +60,16 @@ export async function startGestureAdapter({
   };
 
   try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      onStatus('camera-unavailable');
+      return { stop: () => undefined };
+    }
     stream = await navigator.mediaDevices.getUserMedia({
       video: { width: 640, height: 480, facingMode: 'user' },
       audio: false,
     });
   } catch (error) {
-    const denied =
-      error instanceof DOMException &&
-      (error.name === 'NotAllowedError' || error.name === 'SecurityError');
-    onStatus(denied ? 'denied' : 'unavailable');
+    onStatus(statusForCameraFailure(error));
     return { stop: () => undefined };
   }
 
@@ -83,7 +82,7 @@ export async function startGestureAdapter({
     });
   } catch {
     stream.getTracks().forEach((track) => track.stop());
-    onStatus('unavailable');
+    onStatus('model-unavailable');
     return { stop: () => undefined };
   }
 

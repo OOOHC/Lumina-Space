@@ -1,6 +1,6 @@
 ---
 status: approved v1.0
-last-updated: 2026-07-12
+last-updated: 2026-07-16
 ---
 
 # Lumina Space Architecture Requirements Document
@@ -14,14 +14,14 @@ last-updated: 2026-07-12
 - Immutable public content and private mutable work
 - Server-enforced ownership when remote data arrives
 
-## Current architecture (as built, updated 2026-07-15)
+## Current architecture (as built, updated 2026-07-16)
 
 An npm-workspaces repository (ADR 0004 executed 2026-07-15). `apps/web` holds the
 Vite + React + TypeScript viewer; `apps/api` holds the Cloudflare Workers + Hono API
 (V3). All `src/...` paths below are `apps/web/src/...` unless prefixed. The realised
 layers:
 
-**apps/api (V3, in progress):** Hono on Workers; Drizzle schema for `user`, `session`,
+**apps/api (V3–V5):** Hono on Workers; Drizzle schema for `user`, `session`,
 `account`, `verification` (Better Auth) plus `workspace` and `photo_asset` on Neon
 Postgres; Better Auth email/password at `/api/auth/*`, provisioning each user's personal
 workspace on sign-up (ADR 0003). Secrets via `.dev.vars` locally / `wrangler secret` in
@@ -63,6 +63,11 @@ production. `nodejs_compat` enabled for `node:crypto`.
   (hand-rolled path check; a router library arrives with a third route). It reuses
   the same scene/gallery/intent stack, including optional gesture viewing and the
   2D fallback.
+- **V5 deployment shape** — one Cloudflare Worker serves `apps/web/dist` as static
+  assets and runs Hono first for `/api/*` and `/e/*`. The exhibition navigation route
+  injects Open Graph/Twitter metadata from the immutable published revision before
+  returning the SPA shell. Production API calls are same-origin; Vite development may
+  still use port 5174 against the Worker on port 8787.
 
 XR layers do not exist. Roadmap descriptions beyond V5 are requirements, not claims
 about current code.
@@ -149,14 +154,14 @@ Gesture providers are adapters. MediaPipe is the first planned browser implement
 domain concept. Gallery behaviour receives focus/select/manipulation intents and cannot depend
 on hand landmarks or identify the tracking provider.
 
-## Proposed V3 platform (status: proposed — see ADR 0006)
+## Implemented platform (accepted — see ADR 0006)
 
 Neon Postgres (relational product data), Cloudflare R2 (photo objects, presigned direct
 upload), Better Auth (sessions in Postgres), and a Cloudflare Workers + Hono API layer
 enforcing workspace ownership on every write. Chosen for unattended availability,
 free-tier operation with application-enforced resource limits, the relational domain
-model, and transferable skills. Nothing in this section authorises dependencies or
-backend code before the approved V3 plan.
+model, and transferable skills. Provider secrets and production-origin configuration
+remain deployment concerns and never enter tracked source.
 
 ## Evolution strategy
 

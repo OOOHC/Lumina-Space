@@ -8,7 +8,7 @@ import { bindIntents } from '../state/intentBindings';
 import { GalleryFallback } from './GalleryFallback';
 import { GestureControls } from './GestureControls';
 import { PhotoDetailOverlay } from './PhotoDetailOverlay';
-import { LoadingScreen } from './StatusScreens';
+import { LoadingScreen, ScenePreparingOverlay } from './StatusScreens';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 import { intentBus } from '../input/intent';
 import type { Photo } from '../types';
@@ -45,6 +45,7 @@ type PageState =
  */
 export function PublicExhibitionPage({ slug }: { slug: string }) {
   const [state, setState] = useState<PageState>({ kind: 'loading' });
+  const [sceneReady, setSceneReady] = useState(false);
   const selectedId = useGalleryStore((s) => s.selectedId);
   const photos = useGalleryStore((s) => s.photos);
   const present = useGalleryStore((s) => s.present);
@@ -63,6 +64,7 @@ export function PublicExhibitionPage({ slug }: { slug: string }) {
   }, []);
 
   useEffect(() => {
+    setSceneReady(false);
     void (async () => {
       try {
         // Deliberately anonymous: no credentials on a public route.
@@ -106,6 +108,7 @@ export function PublicExhibitionPage({ slug }: { slug: string }) {
 
   const { exhibition } = state;
   const selectedPhoto = photos.find((p) => p.id === selectedId) ?? null;
+  const readinessKey = photos.map((photo) => photo.id).join('|');
 
   return (
     <div className="app">
@@ -113,7 +116,10 @@ export function PublicExhibitionPage({ slug }: { slug: string }) {
         <GalleryFallback photos={photos} webglUnavailable={!webglAvailable} />
       ) : (
         <>
-          <SceneCanvas>
+          <SceneCanvas
+            onReady={() => setSceneReady(true)}
+            readinessKey={readinessKey}
+          >
             <GalleryScene reducedMotion={reducedMotion} />
           </SceneCanvas>
           <div className="hud">
@@ -138,6 +144,7 @@ export function PublicExhibitionPage({ slug }: { slug: string }) {
               <GestureControls />
             </div>
           </div>
+          {!sceneReady && <ScenePreparingOverlay />}
         </>
       )}
       {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}

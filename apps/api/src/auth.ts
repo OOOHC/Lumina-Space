@@ -11,9 +11,15 @@ import * as schema from './db/schema';
  * A fresh user triggers `afterCreate`, which provisions the personal workspace
  * that ADR 0003 requires — one owner, created atomically with the account.
  */
-export function createAuth(db: Database, secret: string, trustedOrigins: string[]) {
+export function createAuth(
+  db: Database,
+  secret: string,
+  trustedOrigins: string[],
+  baseURL: string,
+) {
   return betterAuth({
     secret,
+    baseURL,
     trustedOrigins,
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     emailAndPassword: {
