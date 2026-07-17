@@ -312,10 +312,18 @@ camera-composited WebAR.
 
 ### User Journey
 
-`open palm engage -> point -> one-hand pinch open -> open-palm horizontal swipe previous/next
--> two-hand span zoom -> neutral re-arm -> point + one-hand pinch close -> gallery`
+**Implemented today:**
+`open palm engage -> point -> one-hand pinch open -> open-palm horizontal swipe
+previous/next while open -> one-hand held-pinch zoom -> point + one-hand pinch close
+-> gallery`
 
-Tracking loss at any point cancels continuous recognition and preserves the last stable view.
+**Target once two-hand zoom ships (not yet built — see Scope):**
+`... -> open-palm horizontal swipe previous/next -> two-hand span zoom -> neutral re-arm
+-> point + one-hand pinch close -> gallery`
+
+Tracking loss at any point is a graded recovery, not a single cancel: pointer/hover
+invalidates immediately, a brief gap during an active zoom ends only that zoom, and only
+sustained loss closes the photo — see DESIGN.md step 6 and intent.ts for the exact tiers.
 
 ### Scope
 
@@ -354,7 +362,8 @@ hand-count knowledge remain inside the adapter.
 
 ### Risks
 
-- One-hand pinch being confused with two-hand inward zoom
+- One-hand pinch being confused with two-hand inward zoom (dormant until two-hand zoom
+  ships — not yet built, see Scope)
 - Swipe being triggered by ordinary pointing drift
 - Discoverability, fatigue, and false positives
 
