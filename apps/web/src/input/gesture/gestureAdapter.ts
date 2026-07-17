@@ -2,6 +2,7 @@ import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { intentBus, type IntentBus } from '../intent';
 import {
   classifyHand,
+  handScale,
   pinchSpread,
   smoothPoint,
   type LandmarkPoint,
@@ -11,19 +12,31 @@ import {
   type GestureStatus,
 } from './gestureStatus';
 import { TUNING, type GestureDiagnostics } from './gestureTuning';
+import {
+  createSwipeState,
+  resetSwipeOrigin,
+  updateSwipe,
+} from './swipeTracker';
 
 export type { GestureStatus } from './gestureStatus';
 export type { GestureDiagnostics } from './gestureTuning';
 
 /**
  * Gesture input adapter (ADR 0001, ARD rule 3). MediaPipe hand tracking in,
- * existing intents out: `point-at` while pointing, `open-focused` on a pinch,
- * `point-lost` when tracking ends. Raw landmarks never cross this boundary,
+ * device-neutral intents out: `point-at` while pointing, `open-focused` on
+ * a quick pinch, `inspect`/`inspect-end` for a held-pinch zoom, `swipe` on
+ * an open-palm horizontal motion. Raw landmarks never cross this boundary,
  * and this module knows nothing of gallery, scene, or state.
  *
+ * Tracking loss is a three-tier timeline (2026-07-17), not one event:
+ * `point-lost` fires immediately (pointer/hover only), an active zoom ends
+ * after ZOOM_CANCEL_GRACE_MS, and only sustained loss past
+ * TRACKING_LOST_CLOSE_MS emits `tracking-timeout` — the signal
+ * state/intentBindings.ts uses to close an opened photo. See intent.ts's
+ * module doc for why these three are kept deliberately separate.
+ *
  * Engagement follows DESIGN.md ("Curator's Hand"): the camera may be on, but
- * nothing acts on the gallery until the visitor shows an OPEN PALM. Losing
- * the hand disengages after a short grace period and cancels cleanly.
+ * nothing acts on the gallery until the visitor shows an OPEN PALM.
  */
 
 export interface GestureAdapterHandle {
@@ -45,14 +58,25 @@ const MODEL_URL =
 // Feel parameters live in gestureTuning.ts so the owner tuning session can
 // adjust one file; the running adapter reads them at start.
 const {
-  DISENGAGE_AFTER_MS,
+  ZOOM_CANCEL_GRACE_MS,
+  TRACKING_LOST_CLOSE_MS,
   PINCH_REFRACTORY_MS,
   HOLD_MS,
   INSPECT_RELEASE_SPREAD,
   INSPECT_SPREAD_MIN,
   INSPECT_SPREAD_MAX,
   SMOOTH_ALPHA,
+  SWIPE_MIN_DISTANCE,
+  SWIPE_MIN_VELOCITY,
+  SWIPE_MAX_VERTICAL_RATIO,
+  SWIPE_COOLDOWN_MS,
 } = TUNING;
+const SWIPE_THRESHOLDS = {
+  minDistance: SWIPE_MIN_DISTANCE,
+  minVelocity: SWIPE_MIN_VELOCITY,
+  maxVerticalRatio: SWIPE_MAX_VERTICAL_RATIO,
+  cooldownMs: SWIPE_COOLDOWN_MS,
+};
 
 export async function startGestureAdapter({
   onStatus,
@@ -71,6 +95,9 @@ export async function startGestureAdapter({
     if (stopped) return;
     stopped = true;
     cancelAnimationFrame(rafId);
+    // Explicit lifecycle termination: an active inspect must not survive
+    // shutdown, matching disengage()'s defensive cleanup (2026-07-17).
+    if (inspecting) bus.emit({ type: 'inspect-end' });
     stream?.getTracks().forEach((track) => track.stop());
     landmarker?.close();
     video?.remove();
@@ -121,6 +148,7 @@ export async function startGestureAdapter({
   let pinchStartAt = 0;
   let inspecting = false;
   let lastPose: ReturnType<typeof classifyHand>['pose'] = 'other';
+  let swipeState = createSwipeState();
   let frameCount = 0;
   let fps = 0;
   let fpsWindowStart = performance.now();
@@ -138,18 +166,25 @@ export async function startGestureAdapter({
     lastPinchAt = now;
   };
 
+  /**
+   * Sustained tracking loss (>= TRACKING_LOST_CLOSE_MS): full disengage.
+   * Emits `tracking-timeout`, NOT `point-lost` — the pointer was already
+   * cleared far earlier, at the first missing frame (2026-07-17 correction).
+   */
   const disengage = () => {
-    if (engaged || pointer !== null) {
-      // Tracking loss can never latch a partial inspect (DESIGN step 6).
-      if (inspecting) bus.emit({ type: 'inspect-end' });
-      engaged = false;
-      pointer = null;
-      pinchActive = false;
-      inspecting = false;
-      lastPose = 'other';
-      bus.emit({ type: 'point-lost' });
-      onStatus('ready');
-    }
+    if (!engaged) return;
+    // Defensive safety net: ZOOM_CANCEL_GRACE_MS should already have ended
+    // any inspect well before this point, but tracking loss must never
+    // latch a partial zoom (DESIGN step 6) even if that tier is skipped.
+    if (inspecting) bus.emit({ type: 'inspect-end' });
+    engaged = false;
+    pointer = null;
+    pinchActive = false;
+    inspecting = false;
+    lastPose = 'other';
+    swipeState = resetSwipeOrigin(swipeState);
+    bus.emit({ type: 'tracking-timeout' });
+    onStatus('ready');
   };
 
   const frame = (now: number) => {
@@ -168,6 +203,19 @@ export async function startGestureAdapter({
     }
 
     if (!landmarks) {
+      // Tier 0 (every frame while tracking is absent): a swipe trajectory
+      // must never survive a gap, however brief (2026-07-17 correction) —
+      // unconditional and idempotent, no edge-triggering needed.
+      swipeState = resetSwipeOrigin(swipeState);
+
+      // Tier 0 (edge-triggered, first missing frame only): the pointer/
+      // hover/magnetic-focus position is invalidated immediately. This does
+      // NOT close the photo and does NOT touch the zoom — see intent.ts.
+      if (pointer !== null) {
+        pointer = null;
+        bus.emit({ type: 'point-lost' });
+      }
+
       onDiagnostics?.({
         pose: 'no-hand',
         engaged,
@@ -175,11 +223,22 @@ export async function startGestureAdapter({
         inspecting,
         spread: 0,
         magnitude: 0,
-        pointerX: pointer?.x ?? 0,
-        pointerY: pointer?.y ?? 0,
+        pointerX: 0,
+        pointerY: 0,
         fps,
       });
-      if (now - lastSeen > DISENGAGE_AFTER_MS) disengage();
+
+      // Tier 1 (short grace, inspect-only): a brief drop ends an active
+      // zoom without closing the photo or fully disengaging.
+      if (inspecting && now - lastSeen > ZOOM_CANCEL_GRACE_MS) {
+        bus.emit({ type: 'inspect-end' });
+        pinchActive = false;
+        inspecting = false;
+      }
+
+      // Tier 2 (sustained loss): full disengage; intentBindings.ts closes
+      // the open photo (if any) via `tracking-timeout`.
+      if (now - lastSeen > TRACKING_LOST_CLOSE_MS) disengage();
       return;
     }
     lastSeen = now;
@@ -203,6 +262,30 @@ export async function startGestureAdapter({
         SMOOTH_ALPHA,
       );
       bus.emit({ type: 'point-at', x: pointer.x, y: pointer.y });
+    }
+
+    /**
+     * Open-palm horizontal swipe (V2.6, UNVALIDATED thresholds — see
+     * gestureTuning.ts). Reuses the same mirrored fingertip coordinate as
+     * point-at for directional consistency. Gating on "only while a photo
+     * is open" happens downstream in intentBindings.ts, not here — the
+     * adapter stays ignorant of gallery state (ARD rule 3).
+     */
+    const swipeResult = updateSwipe(
+      swipeState,
+      {
+        poseIsOpenPalm: reading.pose === 'open-palm',
+        pinchActive,
+        x: 1 - reading.pointer.x,
+        y: reading.pointer.y,
+        scale: handScale(landmarks),
+        now,
+      },
+      SWIPE_THRESHOLDS,
+    );
+    swipeState = swipeResult.state;
+    if (swipeResult.direction !== null) {
+      bus.emit({ type: 'swipe', direction: swipeResult.direction });
     }
 
     /**

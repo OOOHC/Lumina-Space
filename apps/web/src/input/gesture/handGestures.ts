@@ -28,8 +28,12 @@ function dist(a: LandmarkPoint, b: LandmarkPoint): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-/** Distance from wrist (0) to middle MCP (9): a rotation-stable hand size. */
-function handScale(lm: LandmarkPoint[]): number {
+/**
+ * Distance from wrist (0) to middle MCP (9): a rotation-stable hand size,
+ * used to normalize thresholds (pinch, swipe) so they hold regardless of
+ * how close the visitor stands to the camera.
+ */
+export function handScale(lm: LandmarkPoint[]): number {
   return Math.max(dist(lm[0], lm[9]), 1e-6);
 }
 

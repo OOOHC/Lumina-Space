@@ -89,11 +89,21 @@ The sequence is one coherent spatial metaphor:
    slight spatial response. Smoothing and target magnetism reduce visible hand jitter.
 3. **Pinch — Pull from the Wall:** the focused photograph leaves the wall and moves into a
    bounded detail presentation while the surrounding gallery softens.
-4. **Small Move — Inspect:** only if validated, a held pinch permits limited print-like tilt
-   or scale. It never becomes unrestricted object manipulation.
+4. **Small Move — Inspect:** a pinch held past a short threshold becomes a continuous
+   zoom driven by thumb–index spread; a quick pinch remains the plain take/return tap.
+   It never becomes unrestricted object manipulation, and tilt/rotation stay excluded
+   (parked in FEATURE_PARKING_LOT.md).
 5. **Release — Settle:** the photograph resolves to the nearest valid stable state.
-6. **Tracking Lost — Cancel:** interrupted tracking cannot leave selection, zoom, or rotation
-   partially active.
+6. **Tracking Lost — Cancel:** tracking loss is a graded recovery, not one blunt cancel
+   (2026-07-17). The pointer/hover position invalidates immediately; a brief gap during
+   an active zoom ends only that zoom; only sustained loss (~1.8s) closes an opened
+   photo and returns to the exhibition. Tracking returning before that closes nothing —
+   the photo stays open, though an interrupted zoom does not resume (a fresh pinch is
+   required). No tier can leave a selection, zoom, or swipe trajectory partially active.
+7. **Open-Palm Swipe — Browse While Open:** with a photograph open, an open-palm
+   horizontal motion moves directly to the previous/next photograph without closing the
+   detail view. Distance, velocity, and cooldown thresholds are initial estimates,
+   unvalidated against a real camera.
 
 The same domain action remains available through conventional input. Gesture changes the
 physical expression and feedback, not the meaning of selection.

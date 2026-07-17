@@ -18,13 +18,16 @@ export function PhotoDetailOverlay({ photo }: PhotoDetailOverlayProps) {
   const onClose = () => intentBus.emit({ type: 'back' });
 
   // V2.6 held-pinch inspect: the print grows with the thumb–index spread and
-  // always settles back to rest on release or tracking loss — a partial zoom
-  // can never latch.
+  // always settles back to rest when the interaction ends — a partial zoom
+  // can never latch. `inspect-end` is the ONLY intent that resets scale
+  // (2026-07-17): `point-lost` now means pointer/hover invalidation only and
+  // must not snap the zoom back on a single dropped tracking frame — that
+  // would defeat ZOOM_CANCEL_GRACE_MS's whole purpose.
   useEffect(() => {
     return intentBus.subscribe((intent) => {
       if (intent.type === 'inspect') {
         setInspectScale(1 + intent.magnitude * 1.35);
-      } else if (intent.type === 'inspect-end' || intent.type === 'point-lost') {
+      } else if (intent.type === 'inspect-end') {
         setInspectScale(1);
       }
     });

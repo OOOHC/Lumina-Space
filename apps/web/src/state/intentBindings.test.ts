@@ -103,4 +103,43 @@ describe('intent bindings', () => {
     expect(state().focusedIndex).toBe(0);
     expect(state().resetToken).toBe(0);
   });
+
+  it('tracking-timeout closes the open photo', () => {
+    applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });
+    applyIntent({ type: 'tracking-timeout' });
+    expect(state().selectedId).toBeNull();
+  });
+
+  it('tracking-timeout is a no-op when nothing is open', () => {
+    applyIntent({ type: 'tracking-timeout' });
+    expect(state().selectedId).toBeNull();
+    expect(state().focusedIndex).toBe(0);
+  });
+
+  it('point-lost never changes gallery state, open or closed', () => {
+    applyIntent({ type: 'point-lost' });
+    expect(state().selectedId).toBeNull();
+    expect(state().focusedIndex).toBe(0);
+
+    applyIntent({ type: 'select-photo', photoId: samplePhotos[2].id });
+    applyIntent({ type: 'point-lost' });
+    expect(state().selectedId).toBe(samplePhotos[2].id);
+  });
+
+  it('swipe changes the open photo forward and backward with wraparound', () => {
+    applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });
+    applyIntent({ type: 'swipe', direction: 1 });
+    expect(state().selectedId).toBe(samplePhotos[1].id);
+    applyIntent({ type: 'swipe', direction: -1 });
+    expect(state().selectedId).toBe(samplePhotos[0].id);
+    // Wraparound at the start of the sequence.
+    applyIntent({ type: 'swipe', direction: -1 });
+    expect(state().selectedId).toBe(samplePhotos[samplePhotos.length - 1].id);
+  });
+
+  it('swipe is ignored when no photo is open', () => {
+    applyIntent({ type: 'swipe', direction: 1 });
+    expect(state().selectedId).toBeNull();
+    expect(state().focusedIndex).toBe(0);
+  });
 });

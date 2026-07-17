@@ -55,6 +55,28 @@ export function applyIntent(intent: Intent): void {
         if (focused) store.select(focused.id);
       }
       break;
+    case 'tracking-timeout':
+      // Sustained tracking loss (>= TRACKING_LOST_CLOSE_MS). The one signal
+      // that closes an opened photo on tracking loss — deliberately NOT
+      // point-lost, which only invalidates the pointer (2026-07-17).
+      if (store.selectedId !== null) {
+        store.select(null);
+      }
+      break;
+    case 'swipe': {
+      // Open-palm horizontal swipe: only while a photo is open, changing
+      // which photo is open directly (does not reuse move-focus, which is
+      // for the closed/browsing state — see ADR discussion 2026-07-17).
+      if (store.selectedId === null) break;
+      const total = store.photos.length;
+      if (total === 0) break;
+      const next = (store.focusedIndex + intent.direction + total) % total;
+      store.select(store.photos[next].id);
+      break;
+    }
+    // 'point-lost' is intentionally unhandled here: it only invalidates the
+    // pointer/hover position (see input/intent.ts), which is entirely
+    // adapter-local state. It never reaches gallery state.
   }
 }
 

@@ -285,6 +285,20 @@ not become a gallery dependency. Raw landmarks do not cross the adapter boundary
 > hysteresis; release or tracking loss always settles back — no partial zoom can
 > latch). Implemented locally; its success metric is the owner-present tuning session
 > plus the deferred multi-tester protocol. Not deployed yet.
+>
+> 2026-07-17 (same day, revised): tracking loss was split into three distinct signals
+> instead of one blunt cancel — `point-lost` (pointer/hover invalidation, immediate),
+> `inspect-end` (ends an active zoom, ~250ms grace), `tracking-timeout` (closes an
+> opened photo, ~1.8s sustained loss). Open-palm horizontal **swipe** was added
+> (browse previous/next while a photograph is open, without closing it) as a
+> dedicated intent — not a reuse of `move-focus`, which only applies while browsing
+> closed. Swipe thresholds are initial, unvalidated estimates. Two-hand span zoom,
+> Reset View gesture, and Rotate/Tilt remain explicitly excluded from this unit —
+> see FEATURE_PARKING_LOT.md. Implemented and verified by typecheck, 79 unit tests
+> (12 new for swipe detection, 5 new for the split tracking-loss/swipe bindings),
+> and a production build; no lint script exists in this repo to run (deferred per
+> AGENTS.md until coding standards are codified). Real-camera verification of feel
+> (swipe thresholds, the 250ms/1.8s timings) still requires the owner tuning session.
 
 ### Product Goal
 
@@ -305,10 +319,15 @@ Tracking loss at any point cancels continuous recognition and preserves the last
 
 ### Scope
 
-- Detail-mode open-palm horizontal swipe mapped to existing previous/next focus intent
-- Bounded two-hand span zoom with `START / UPDATE / END / CANCEL`
-- Existing one-hand point-then-pinch toggle remains open/close, including after zoom
-- Neutral re-arm after two-hand zoom so an inward zoom cannot accidentally close the photo
+- **Implemented:** detail-mode open-palm horizontal swipe as a **dedicated `swipe`
+  intent** (not a reuse of `move-focus`, which only applies while browsing closed —
+  see Architecture Boundaries below), gated to act only while a photograph is open,
+  with distance/velocity/vertical-tolerance thresholds and a cooldown. Thresholds are
+  initial, unvalidated estimates.
+- **Implemented:** existing one-hand point-then-pinch toggle remains open/close,
+  including after a held-pinch zoom.
+- **Deferred, not in this unit:** bounded two-hand span zoom with
+  `START / UPDATE / END / CANCEL`, and the neutral re-arm that goes with it.
 - Direction threshold, cancellation, cooldown, and restrained frame/light feedback
 - Spatial Reveal / Floating Print continuity for pointer, keyboard, touch, and gesture entry;
   reduced-motion substitutes a short state fade
@@ -326,9 +345,12 @@ Tracking loss at any point cancels continuous recognition and preserves the last
 
 ### Architecture Boundaries
 
-Swipe reuses device-neutral navigation intent and one-hand pinch reuses the open/close toggle.
-Only continuous zoom may add a lifecycle intent; MediaPipe landmarks and hand-count knowledge
-remain inside the adapter.
+Swipe is its own dedicated intent (`{ type: 'swipe'; direction: -1 | 1 }`), gated to "only
+while open" in state/intentBindings.ts, not in the adapter — the adapter never knows
+whether a photograph is open. One-hand pinch reuses the open/close toggle. Tracking-loss
+recovery is three separate intents (`point-lost`, `inspect-end`, `tracking-timeout`), each
+with exactly one responsibility — see intent.ts's module doc. MediaPipe landmarks and
+hand-count knowledge remain inside the adapter.
 
 ### Risks
 
