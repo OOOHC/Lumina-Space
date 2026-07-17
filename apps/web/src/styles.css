@@ -201,6 +201,21 @@ button {
   max-width: 20rem;
 }
 
+/* Dev-only tuning instrument (?gestureDebug); never ships to production. */
+.gesture-debug {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: left;
+  color: #9be89b;
+  background: rgba(10, 12, 10, 0.92);
+  border: 1px solid #2c3a2c;
+  border-radius: 3px;
+  white-space: pre;
+}
+
 /* ---- Detail overlay ---- */
 
 .detail-overlay {

@@ -17,7 +17,9 @@ interface GesturePointTargetProps {
  * Magnetism: the pointed position snaps to the nearest photograph within a
  * generous radius, so hand jitter selects prints, not pixels.
  */
-const MAGNET_RADIUS = 0.16; // normalized viewport distance
+import { TUNING } from '../input/gesture/gestureTuning';
+
+const MAGNET_RADIUS = TUNING.MAGNET_RADIUS; // normalized viewport distance
 
 export function GesturePointTarget({ placements }: GesturePointTargetProps) {
   const camera = useThree((s) => s.camera);

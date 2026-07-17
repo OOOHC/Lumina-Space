@@ -10,8 +10,10 @@ import {
   statusForCameraFailure,
   type GestureStatus,
 } from './gestureStatus';
+import { TUNING, type GestureDiagnostics } from './gestureTuning';
 
 export type { GestureStatus } from './gestureStatus';
+export type { GestureDiagnostics } from './gestureTuning';
 
 /**
  * Gesture input adapter (ADR 0001, ARD rule 3). MediaPipe hand tracking in,
@@ -30,6 +32,8 @@ export interface GestureAdapterHandle {
 
 interface StartOptions {
   onStatus: (status: GestureStatus) => void;
+  /** Dev-only tuning overlay feed; never wired in production UI. */
+  onDiagnostics?: (d: GestureDiagnostics) => void;
   bus?: IntentBus;
 }
 
@@ -38,15 +42,21 @@ const WASM_BASE =
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
 
-const DISENGAGE_AFTER_MS = 600; // hand missing this long → point-lost
-const PINCH_REFRACTORY_MS = 900; // one pinch = one selection
-const HOLD_MS = 400; // pinch held longer than this becomes an inspect, not a tap
-const INSPECT_RELEASE_SPREAD = 0.62; // fingers this far apart end the inspect
-const INSPECT_SPREAD_MIN = 0.08; // tight pinch → magnitude 0
-const INSPECT_SPREAD_MAX = 0.55; // wide-but-held pinch → magnitude 1
+// Feel parameters live in gestureTuning.ts so the owner tuning session can
+// adjust one file; the running adapter reads them at start.
+const {
+  DISENGAGE_AFTER_MS,
+  PINCH_REFRACTORY_MS,
+  HOLD_MS,
+  INSPECT_RELEASE_SPREAD,
+  INSPECT_SPREAD_MIN,
+  INSPECT_SPREAD_MAX,
+  SMOOTH_ALPHA,
+} = TUNING;
 
 export async function startGestureAdapter({
   onStatus,
+  onDiagnostics,
   bus = intentBus,
 }: StartOptions): Promise<GestureAdapterHandle> {
   onStatus('starting');
@@ -111,6 +121,9 @@ export async function startGestureAdapter({
   let pinchStartAt = 0;
   let inspecting = false;
   let lastPose: ReturnType<typeof classifyHand>['pose'] = 'other';
+  let frameCount = 0;
+  let fps = 0;
+  let fpsWindowStart = performance.now();
 
   onStatus('ready');
 
@@ -147,7 +160,25 @@ export async function startGestureAdapter({
     const result = landmarker.detectForVideo(video, now);
     const landmarks = result.landmarks[0];
 
+    frameCount += 1;
+    if (now - fpsWindowStart >= 1000) {
+      fps = Math.round((frameCount * 1000) / (now - fpsWindowStart));
+      frameCount = 0;
+      fpsWindowStart = now;
+    }
+
     if (!landmarks) {
+      onDiagnostics?.({
+        pose: 'no-hand',
+        engaged,
+        pinchActive,
+        inspecting,
+        spread: 0,
+        magnitude: 0,
+        pointerX: pointer?.x ?? 0,
+        pointerY: pointer?.y ?? 0,
+        fps,
+      });
       if (now - lastSeen > DISENGAGE_AFTER_MS) disengage();
       return;
     }
@@ -166,7 +197,11 @@ export async function startGestureAdapter({
 
     if (reading.pose === 'pointing' || reading.pose === 'pinch') {
       // Selfie view: mirror x so pointing right moves right on screen.
-      pointer = smoothPoint(pointer, { x: 1 - reading.pointer.x, y: reading.pointer.y });
+      pointer = smoothPoint(
+        pointer,
+        { x: 1 - reading.pointer.x, y: reading.pointer.y },
+        SMOOTH_ALPHA,
+      );
       bus.emit({ type: 'point-at', x: pointer.x, y: pointer.y });
     }
 
@@ -179,6 +214,25 @@ export async function startGestureAdapter({
      * instantly end the pinch. Release settles everything (inspect-end).
      */
     const spread = pinchSpread(landmarks);
+    onDiagnostics?.({
+      pose: reading.pose,
+      engaged,
+      pinchActive,
+      inspecting,
+      spread,
+      magnitude: inspecting
+        ? Math.min(
+            1,
+            Math.max(
+              0,
+              (spread - INSPECT_SPREAD_MIN) / (INSPECT_SPREAD_MAX - INSPECT_SPREAD_MIN),
+            ),
+          )
+        : 0,
+      pointerX: pointer?.x ?? 0,
+      pointerY: pointer?.y ?? 0,
+      fps,
+    });
     if (!pinchActive) {
       // A pinch starts only from a pointing pose. Field finding (owner,
       // 2026-07-15): a relaxing open palm reads as a pinch for a few frames.

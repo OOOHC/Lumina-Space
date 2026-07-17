@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
   GestureAdapterHandle,
+  GestureDiagnostics,
   GestureStatus,
 } from '../input/gesture/gestureAdapter';
 import { useGalleryStore } from '../state/galleryStore';
+
+/**
+ * Tuning-session instrumentation: dev builds only, and only when the page is
+ * opened with ?gestureDebug. Production users can never see a diagnostic
+ * overlay (DESIGN gesture visual rules).
+ */
+const DEBUG_ENABLED =
+  import.meta.env.DEV &&
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).has('gestureDebug');
 
 const STATUS_LINE: Partial<Record<GestureStatus, string>> = {
   starting: 'Preparing the camera…',
@@ -23,6 +34,7 @@ const STATUS_LINE: Partial<Record<GestureStatus, string>> = {
  */
 export function GestureControls() {
   const [status, setStatus] = useState<GestureStatus>('stopped');
+  const [diag, setDiag] = useState<GestureDiagnostics | null>(null);
   const handle = useRef<GestureAdapterHandle | null>(null);
   const photoOpen = useGalleryStore((s) => s.selectedId !== null);
   const active = status === 'starting' || status === 'ready' || status === 'engaged';
@@ -38,12 +50,16 @@ export function GestureControls() {
 
   const enable = async () => {
     const { startGestureAdapter } = await import('../input/gesture/gestureAdapter');
-    handle.current = await startGestureAdapter({ onStatus: setStatus });
+    handle.current = await startGestureAdapter({
+      onStatus: setStatus,
+      onDiagnostics: DEBUG_ENABLED ? setDiag : undefined,
+    });
   };
 
   const disable = () => {
     handle.current?.stop();
     handle.current = null;
+    setDiag(null);
   };
 
   return (
@@ -59,6 +75,21 @@ export function GestureControls() {
         <p className="gesture-status" role="status">
           {statusLine}
         </p>
+      )}
+      {DEBUG_ENABLED && active && (
+        <pre className="gesture-debug" aria-hidden="true">
+          {diag
+            ? [
+                `pose      ${diag.pose}`,
+                `engaged   ${diag.engaged ? 'yes' : 'no'}`,
+                `pinch     ${diag.pinchActive ? (diag.inspecting ? 'INSPECT' : 'held') : '—'}`,
+                `spread    ${diag.spread.toFixed(2)}`,
+                `zoom      ${(diag.magnitude * 100).toFixed(0)}%`,
+                `pointer   ${diag.pointerX.toFixed(2)}, ${diag.pointerY.toFixed(2)}`,
+                `track fps ${diag.fps}`,
+              ].join('\n')
+            : 'waiting for frames…'}
+        </pre>
       )}
     </div>
   );
