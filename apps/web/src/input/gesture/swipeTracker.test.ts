@@ -12,6 +12,7 @@ const THRESHOLDS: SwipeThresholds = {
   minVelocity: 5,
   maxVerticalRatio: 0.5,
   cooldownMs: 500,
+  poseGraceMs: 120,
 };
 
 const sample = (over: Partial<Parameters<typeof updateSwipe>[1]>) => ({
@@ -83,13 +84,30 @@ describe('updateSwipe', () => {
     expect(second.direction).toBeNull();
   });
 
-  it('does not evaluate at all when the pose is not open-palm', () => {
+  it('tolerates a brief non-open-palm blip within the pose grace window', () => {
+    // A fast sweep can blur/foreshorten fingers for a few frames; that must
+    // not discard the candidate the way a real reset would (2026-07-17 fix).
     let state = createSwipeState();
     state = updateSwipe(state, sample({ x: 0.3, now: 0 }), THRESHOLDS).state;
     expect(state.origin).not.toBeNull();
+    const blip = updateSwipe(
+      state,
+      sample({ poseIsOpenPalm: false, x: 0.9, now: 60 }), // within 120ms grace
+      THRESHOLDS,
+    );
+    expect(blip.direction).toBeNull();
+    expect(blip.state.origin).toEqual({ x: 0.3, y: 0, t: 0 }); // preserved, not reset
+    // Tracking recovers and completes the swipe using the original origin.
+    const result = updateSwipe(blip.state, sample({ x: 0.9, now: 100 }), THRESHOLDS);
+    expect(result.direction).toBe(1);
+  });
+
+  it('resets once the non-open-palm reading outlasts the pose grace window', () => {
+    let state = createSwipeState();
+    state = updateSwipe(state, sample({ x: 0.3, now: 0 }), THRESHOLDS).state;
     const result = updateSwipe(
       state,
-      sample({ poseIsOpenPalm: false, x: 0.9, now: 100 }),
+      sample({ poseIsOpenPalm: false, x: 0.9, now: 500 }), // well past 120ms grace
       THRESHOLDS,
     );
     expect(result.direction).toBeNull();
@@ -125,7 +143,11 @@ describe('updateSwipe', () => {
   });
 
   it('resetSwipeOrigin preserves the cooldown timestamp', () => {
-    const state: SwipeState = { origin: { x: 0.5, y: 0, t: 10 }, lastFiredAt: 999 };
+    const state: SwipeState = {
+      origin: { x: 0.5, y: 0, t: 10 },
+      lastFiredAt: 999,
+      lastGoodAt: 10,
+    };
     expect(resetSwipeOrigin(state).lastFiredAt).toBe(999);
   });
 

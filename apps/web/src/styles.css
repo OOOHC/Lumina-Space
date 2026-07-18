@@ -186,11 +186,15 @@ button {
 }
 
 .hud-gesture {
-  position: absolute;
+  /* Fixed (not absolute-inside-.hud) and explicitly stacked above the detail
+   * overlay (2026-07-18 fix): gesture status must stay legible while a photo
+   * is open, not disappear behind the modal's near-opaque backdrop. */
+  position: fixed;
   top: 1.25rem;
   right: 2rem;
   pointer-events: auto;
   text-align: right;
+  z-index: 5;
 }
 
 .gesture-status {
@@ -223,9 +227,27 @@ button {
   inset: 0;
   background: rgba(8, 8, 11, 0.92);
   display: grid;
-  place-items: center;
+  /* `safe` (2026-07-18 fix): plain `center` centers even when content
+   * overflows this scrollable container, which pushes part of a tall
+   * (portrait) photo's title/credit out of reach above the viewport or
+   * under the fixed preview banner. `safe` falls back to start-alignment
+   * once centering would overflow, so scrolling always reaches the true
+   * top and bottom of the content. */
+  place-items: safe center;
   padding: 4.5rem 2rem 2rem;
   overflow-y: auto;
+  /* Let vertical scroll stay native; a horizontal drag is the swipe gesture
+   * (2026-07-18), not a browser edge-navigation swipe. */
+  touch-action: pan-y;
+}
+
+/* The draft-preview banner is position:fixed and floats outside this
+ * overlay's own scroll flow, so a portrait photo (whose title/caption land
+ * lower on screen) can scroll underneath and get covered by it (2026-07-18
+ * fix). Reserve enough bottom clearance whenever the preview banner is
+ * present so detail-view text never sits behind it. */
+.app--preview .detail-overlay {
+  padding-bottom: 10rem;
 }
 
 .detail-back {
@@ -1011,6 +1033,13 @@ button {
   inset: 0;
   overflow-y: auto;
   padding: 2rem 1.5rem 3rem;
+}
+
+/* Same fixed-preview-banner overlap as .detail-overlay (2026-07-18 fix):
+ * the mobile/no-WebGL fallback grid is a plain scrollable list too, so the
+ * last card(s) can land underneath the banner without extra clearance. */
+.app--preview .fallback {
+  padding-bottom: 10rem;
 }
 
 .fallback-header {

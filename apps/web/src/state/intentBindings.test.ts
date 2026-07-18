@@ -55,21 +55,27 @@ describe('intent bindings', () => {
     expect(state().selectedId).toBe(samplePhotos[1].id);
   });
 
-  it('open-focused returns an already-open photo to the wall (toggle)', () => {
+  it('open-focused returns an already-open photo to the wall (toggle) and requests the room overview', () => {
     applyIntent({ type: 'open-focused' });
     expect(state().selectedId).toBe(samplePhotos[0].id);
+    expect(state().resetToken).toBe(0); // opening never moves the camera
     applyIntent({ type: 'open-focused' });
     expect(state().selectedId).toBeNull();
     // Focus stays on the returned photo so the journey continues from there.
     expect(state().focusedIndex).toBe(0);
+    // Closing always glides home (2026-07-17): the wall waypoint alone made
+    // "closed" look identical to "about to open".
+    expect(state().resetToken).toBe(1);
   });
 
-  it('back closes the detail view and is a safe no-op otherwise', () => {
+  it('back closes the detail view, requests the room overview, and is a safe no-op otherwise', () => {
     applyIntent({ type: 'back' });
     expect(state().selectedId).toBeNull();
+    expect(state().resetToken).toBe(0);
     applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });
     applyIntent({ type: 'back' });
     expect(state().selectedId).toBeNull();
+    expect(state().resetToken).toBe(1);
   });
 
   it('reset-view requests a camera reset only while browsing', () => {
@@ -104,16 +110,22 @@ describe('intent bindings', () => {
     expect(state().resetToken).toBe(0);
   });
 
-  it('tracking-timeout closes the open photo', () => {
+  it('tracking-timeout closes the open photo WITHOUT gliding home (2026-07-18)', () => {
+    // Involuntary — the hand merely left the frame — is not the same signal
+    // as a deliberate close, so unlike back/toggle-close this must not also
+    // request a camera reset (owner correction after a false-positive close
+    // yanked the camera away with no action on their part).
     applyIntent({ type: 'select-photo', photoId: samplePhotos[0].id });
     applyIntent({ type: 'tracking-timeout' });
     expect(state().selectedId).toBeNull();
+    expect(state().resetToken).toBe(0);
   });
 
   it('tracking-timeout is a no-op when nothing is open', () => {
     applyIntent({ type: 'tracking-timeout' });
     expect(state().selectedId).toBeNull();
     expect(state().focusedIndex).toBe(0);
+    expect(state().resetToken).toBe(0);
   });
 
   it('point-lost never changes gallery state, open or closed', () => {

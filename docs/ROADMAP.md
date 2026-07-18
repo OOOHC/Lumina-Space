@@ -1,9 +1,9 @@
 ---
 status: approved v1.0
-last-updated: 2026-07-16
-current-version: V2.6
-current-gate: Spatial Reveal / Floating Print direct controls and unambiguous exit
-next-milestone: owner acceptance of Floating Print before gesture-vocabulary expansion
+last-updated: 2026-07-18
+current-version: 1.0 (V5 closed; V2.6 continues as an independent post-1.0 track)
+current-gate: V2.6 ongoing gesture refinement — does not gate the 1.0 tag
+next-milestone: V6/V7 remain triggered-but-unstarted pending a real, named need
 ---
 
 # ROADMAP
@@ -15,8 +15,11 @@ boundary, but does not authorise its folders, dependencies, services, or UI.
 ## Release structure
 
 - **Engineering Foundation:** V0
-- **Prototype Milestone:** V1, V2, and V2.5
-- **Product Milestone:** V3, V4, and V5; completing V5 defines Lumina Space 1.0
+- **Prototype Milestone:** V1, V2, V2.5, and V2.6
+- **Product Milestone:** V3, V4, and V5; completing V5 defines Lumina Space 1.0. V2.6
+  (advanced gesture vocabulary) continues independently afterward and does not gate
+  the 1.0 tag — V5's own exit criteria already accepted V2.5-level point/pinch as the
+  published gesture baseline and explicitly transferred the advanced journey to V2.6.
 - **Platform Expansion:** triggered V6 and V7
 - **Experience Expansion:** triggered XR-1 and conditional XR-2 viewer clients
 
@@ -370,16 +373,23 @@ hand-count knowledge remain inside the adapter.
 ### Exit Criteria
 
 - [x] Owner review identified the coherent detail-view vocabulary and state boundaries.
-- [ ] Ten intended swipes in each direction achieve at least 9 correct moves with no skipped
+- [x] Ten intended swipes in each direction achieve at least 9 correct moves with no skipped
       photograph, and 60 seconds of pointing/zoom produces no unintended navigation.
-- [ ] Ten open-zoom-close journeys achieve at least 9 clean completions with no zoom gesture
-      interpreted as close.
-- [ ] Tracking loss cancels safely; pointer, keyboard, and touch remain complete fallbacks.
+      (owner real-camera retest, 2026-07-18, after the hand-detection-confidence fix —
+      reported working; not logged as a precise 9/10 count.)
+- [x] Ten open-zoom-close journeys achieve at least 9 clean completions with no zoom gesture
+      interpreted as close. (owner real-camera retest, 2026-07-18, after the
+      `PINCH_POSE_GRACE_MS` fix — reported working; not logged as a precise 9/10 count.)
+- [x] Tracking loss cancels safely; pointer, keyboard, and touch remain complete fallbacks.
+      (unchanged this round; no failure reported across this session's real-camera testing.)
 
 ### Evidence
 
 - Decision record referencing V2.5 findings
-- Focused usability, reliability, and performance results
+- Owner real-camera retest, 2026-07-18, confirming the two 2026-07-18 fixes
+  (`MIN_HAND_DETECTION_CONFIDENCE`/etc. and `PINCH_POSE_GRACE_MS`) resolved the swipe and
+  pinch/zoom reliability problems found in the prior retest the same day — see
+  `.private/DEV_JOURNAL.md` for the full root-cause/fix history.
 
 ## Product Milestone
 
@@ -498,7 +508,8 @@ publishing. Exhibition configuration references workspace photo assets.
 
 ## V5 — Publishing Platform / Lumina Space 1.0 (closed 2026-07-16)
 
-> All software exists and every locally-verifiable criterion passed. A production-shaped
+> Completing this gate is Lumina Space 1.0 (owner decision, 2026-07-18 — V2.6 is a
+> separate, ongoing track and does not gate the tag). All software exists and every locally-verifiable criterion passed. A production-shaped
 > local run now serves the Vite SPA and Hono API from one Cloudflare Worker; same-origin
 > authentication, anonymous publication reads, designed scene loading, and immutable
 > revision-derived Open Graph metadata were verified in-browser. The free production route

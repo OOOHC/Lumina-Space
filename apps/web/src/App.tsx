@@ -6,6 +6,7 @@ import { useGalleryStore } from './state/galleryStore';
 import { bindIntents } from './state/intentBindings';
 import { AccountPanel } from './ui/AccountPanel';
 import { GalleryFallback } from './ui/GalleryFallback';
+import { GestureControls } from './ui/GestureControls';
 import { HudControls } from './ui/HudControls';
 import { PhotoDetailOverlay } from './ui/PhotoDetailOverlay';
 import { ScenePreparingOverlay } from './ui/StatusScreens';
@@ -62,7 +63,7 @@ function DraftPreview({ title }: { title: string }) {
     selectedId === null && photos[focusedIndex] ? photos[focusedIndex].title : null;
 
   return (
-    <div className="app">
+    <div className="app app--preview">
       {useFallback ? (
         <GalleryFallback photos={photos} webglUnavailable={!webglAvailable} />
       ) : (
@@ -78,6 +79,11 @@ function DraftPreview({ title }: { title: string }) {
         </>
       )}
       {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}
+      {!useFallback && (
+        <div className="hud-gesture">
+          <GestureControls />
+        </div>
+      )}
       <div className="preview-banner" role="status">
         <span>Previewing draft — {title}</span>
         <button type="button" className="text-button" onClick={() => void exitPreview()}>

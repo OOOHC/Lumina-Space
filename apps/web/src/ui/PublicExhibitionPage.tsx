@@ -140,14 +140,16 @@ export function PublicExhibitionPage({ slug }: { slug: string }) {
             >
               Reset view
             </button>
-            <div className="hud-gesture">
-              <GestureControls />
-            </div>
           </div>
           {!sceneReady && <ScenePreparingOverlay />}
         </>
       )}
       {selectedPhoto && <PhotoDetailOverlay photo={selectedPhoto} />}
+      {!useFallback && (
+        <div className="hud-gesture">
+          <GestureControls />
+        </div>
+      )}
     </div>
   );
 }

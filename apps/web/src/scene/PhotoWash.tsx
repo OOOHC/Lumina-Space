@@ -30,14 +30,11 @@ export function PhotoWash({ position, rotationY }: PhotoWashProps) {
     <>
       <spotLight
         ref={light}
-        // Ceiling-track position (owner-tuned 2026-07-17): hung right under
-        // the 5 m ceiling, slightly closer to the wall, with a longer throw —
-        // the beam draws a taller scallop down the wall across the print.
-        position={[position[0] + nx * 1.4, position[1] + 2.85, position[2] + nz * 1.4]}
-        angle={0.5}
-        penumbra={0.95}
-        intensity={38}
-        distance={13}
+        position={[position[0] + nx * 1.6, position[1] + 1.7, position[2] + nz * 1.6]}
+        angle={0.6}
+        penumbra={0.9}
+        intensity={20}
+        distance={8}
         decay={1.7}
         color="#fff1dc"
       />

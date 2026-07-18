@@ -132,6 +132,13 @@ physical expression and feedback, not the meaning of selection.
 - Back, close, and reset affordances remain predictable across input methods.
 - The wall-to-detail transition should preserve the impression that the selected print was
   taken from a known physical location and can return there.
+- A deliberate close — Back, Escape, or a quick pinch — always glides the camera to the
+  room overview, not just back to that photograph's own close-up viewpoint (2026-07-17
+  fix). "Closed" must look unmistakably different from "about to open," not identical
+  to it.
+- Tracking loss closing the photo (see step 6) is involuntary, not a deliberate "I'm
+  done" signal, and deliberately does NOT glide the camera anywhere (2026-07-18
+  correction) — it leaves the visitor exactly where they were, camera untouched.
 
 ## Responsive and fallback behaviour
 

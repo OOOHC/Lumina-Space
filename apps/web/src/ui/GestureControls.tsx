@@ -41,7 +41,7 @@ export function GestureControls() {
 
   const statusLine =
     status === 'engaged' && photoOpen
-      ? 'Hold a pinch and spread your fingers to look closer · a quick pinch returns it · Esc.'
+      ? 'Hold a pinch and spread your fingers to look closer · swipe an open palm sideways for the next or previous photo · a quick pinch returns it · Esc.'
       : STATUS_LINE[status];
 
   useEffect(() => {

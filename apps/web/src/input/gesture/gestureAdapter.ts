@@ -5,6 +5,7 @@ import {
   handScale,
   pinchSpread,
   smoothPoint,
+  smoothScalar,
   type LandmarkPoint,
 } from './handGestures';
 import {
@@ -65,17 +66,24 @@ const {
   INSPECT_RELEASE_SPREAD,
   INSPECT_SPREAD_MIN,
   INSPECT_SPREAD_MAX,
+  INSPECT_SMOOTH_ALPHA,
   SMOOTH_ALPHA,
   SWIPE_MIN_DISTANCE,
   SWIPE_MIN_VELOCITY,
   SWIPE_MAX_VERTICAL_RATIO,
   SWIPE_COOLDOWN_MS,
+  SWIPE_POSE_GRACE_MS,
+  MIN_HAND_DETECTION_CONFIDENCE,
+  MIN_HAND_PRESENCE_CONFIDENCE,
+  MIN_TRACKING_CONFIDENCE,
+  PINCH_POSE_GRACE_MS,
 } = TUNING;
 const SWIPE_THRESHOLDS = {
   minDistance: SWIPE_MIN_DISTANCE,
   minVelocity: SWIPE_MIN_VELOCITY,
   maxVerticalRatio: SWIPE_MAX_VERTICAL_RATIO,
   cooldownMs: SWIPE_COOLDOWN_MS,
+  poseGraceMs: SWIPE_POSE_GRACE_MS,
 };
 
 export async function startGestureAdapter({
@@ -125,6 +133,12 @@ export async function startGestureAdapter({
       baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
       runningMode: 'VIDEO',
       numHands: 1,
+      // 2026-07-18 field finding: MediaPipe's 0.5 defaults were strict
+      // enough that ordinary webcam framing/lighting often found no hand at
+      // all, forcing repeated re-engagement attempts (see gestureTuning.ts).
+      minHandDetectionConfidence: MIN_HAND_DETECTION_CONFIDENCE,
+      minHandPresenceConfidence: MIN_HAND_PRESENCE_CONFIDENCE,
+      minTrackingConfidence: MIN_TRACKING_CONFIDENCE,
     });
   } catch {
     stream.getTracks().forEach((track) => track.stop());
@@ -146,7 +160,9 @@ export async function startGestureAdapter({
   let lastPinchAt = 0;
   let pinchActive = false;
   let pinchStartAt = 0;
+  let lastPinchPoseAt = 0;
   let inspecting = false;
+  let smoothedSpread: number | null = null;
   let lastPose: ReturnType<typeof classifyHand>['pose'] = 'other';
   let swipeState = createSwipeState();
   let frameCount = 0;
@@ -163,6 +179,7 @@ export async function startGestureAdapter({
     }
     pinchActive = false;
     inspecting = false;
+    smoothedSpread = null;
     lastPinchAt = now;
   };
 
@@ -181,6 +198,7 @@ export async function startGestureAdapter({
     pointer = null;
     pinchActive = false;
     inspecting = false;
+    smoothedSpread = null;
     lastPose = 'other';
     swipeState = resetSwipeOrigin(swipeState);
     bus.emit({ type: 'tracking-timeout' });
@@ -193,7 +211,13 @@ export async function startGestureAdapter({
     if (!video || !landmarker || video.readyState < 2) return;
 
     const result = landmarker.detectForVideo(video, now);
+    // `landmarks`: 2D image-plane points (0..1), used only for on-screen
+    // pointer position. `worldLandmarks`: real-world metric points centered
+    // on the hand, rotation- and distance-invariant — used for every
+    // classification/scale/spread computation (2026-07-17 fix for pose
+    // noise that came from the 2D projection foreshortening under rotation).
     const landmarks = result.landmarks[0];
+    const worldLandmarks = result.worldLandmarks[0];
 
     frameCount += 1;
     if (now - fpsWindowStart >= 1000) {
@@ -202,7 +226,7 @@ export async function startGestureAdapter({
       fpsWindowStart = now;
     }
 
-    if (!landmarks) {
+    if (!landmarks || !worldLandmarks) {
       // Tier 0 (every frame while tracking is absent): a swipe trajectory
       // must never survive a gap, however brief (2026-07-17 correction) —
       // unconditional and idempotent, no edge-triggering needed.
@@ -234,6 +258,7 @@ export async function startGestureAdapter({
         bus.emit({ type: 'inspect-end' });
         pinchActive = false;
         inspecting = false;
+        smoothedSpread = null;
       }
 
       // Tier 2 (sustained loss): full disengage; intentBindings.ts closes
@@ -243,7 +268,11 @@ export async function startGestureAdapter({
     }
     lastSeen = now;
 
-    const reading = classifyHand(landmarks);
+    const reading = classifyHand(worldLandmarks);
+    // Screen-space fingertip position always comes from the 2D image-plane
+    // landmarks (worldLandmarks has no meaningful on-screen x/y — it is
+    // centered on the hand, not the frame).
+    const rawPointer = { x: landmarks[8].x, y: landmarks[8].y };
 
     if (!engaged) {
       if (reading.pose === 'open-palm') {
@@ -258,7 +287,7 @@ export async function startGestureAdapter({
       // Selfie view: mirror x so pointing right moves right on screen.
       pointer = smoothPoint(
         pointer,
-        { x: 1 - reading.pointer.x, y: reading.pointer.y },
+        { x: 1 - rawPointer.x, y: rawPointer.y },
         SMOOTH_ALPHA,
       );
       bus.emit({ type: 'point-at', x: pointer.x, y: pointer.y });
@@ -276,9 +305,9 @@ export async function startGestureAdapter({
       {
         poseIsOpenPalm: reading.pose === 'open-palm',
         pinchActive,
-        x: 1 - reading.pointer.x,
-        y: reading.pointer.y,
-        scale: handScale(landmarks),
+        x: 1 - rawPointer.x,
+        y: rawPointer.y,
+        scale: handScale(worldLandmarks),
         now,
       },
       SWIPE_THRESHOLDS,
@@ -296,7 +325,12 @@ export async function startGestureAdapter({
      * spread, with exit hysteresis so widening fingers to zoom does not
      * instantly end the pinch. Release settles everything (inspect-end).
      */
-    const spread = pinchSpread(landmarks);
+    const rawSpread = pinchSpread(worldLandmarks);
+    // Smoothed before it ever drives magnitude or the release check
+    // (2026-07-17 fix for "zoom feels uncontrollable"): the raw per-frame
+    // spread was noisy enough on its own to read as broken.
+    smoothedSpread = smoothScalar(smoothedSpread, rawSpread, INSPECT_SMOOTH_ALPHA);
+    const spread = smoothedSpread;
     onDiagnostics?.({
       pose: reading.pose,
       engaged,
@@ -326,9 +360,14 @@ export async function startGestureAdapter({
       ) {
         pinchActive = true;
         pinchStartAt = now;
+        lastPinchPoseAt = now;
         inspecting = false;
+        smoothedSpread = null;
       }
     } else {
+      if (reading.pose === 'pinch') {
+        lastPinchPoseAt = now;
+      }
       const held = now - pinchStartAt;
       if (!inspecting && held >= HOLD_MS) {
         inspecting = true;
@@ -340,9 +379,14 @@ export async function startGestureAdapter({
         );
         bus.emit({ type: 'inspect', magnitude });
       }
+      // Pre-HOLD_MS release tolerates a brief non-'pinch' reading (2026-07-18
+      // fix): a single noisy frame while the pinch is still forming used to
+      // read as an instant release-as-tap, closing the photo even though the
+      // visitor was deliberately holding to start a zoom. Once inspecting,
+      // the spread/open-palm hysteresis already tolerates this — untouched.
       const released = inspecting
         ? spread > INSPECT_RELEASE_SPREAD || reading.pose === 'open-palm'
-        : reading.pose !== 'pinch';
+        : reading.pose !== 'pinch' && now - lastPinchPoseAt > PINCH_POSE_GRACE_MS;
       if (released) {
         endPinch(now, !inspecting && held < HOLD_MS);
       }

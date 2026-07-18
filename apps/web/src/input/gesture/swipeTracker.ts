@@ -18,10 +18,16 @@ export interface SwipeState {
   origin: { x: number; y: number; t: number } | null;
   /** Timestamp (ms) of the last successful swipe; -Infinity if none yet. */
   lastFiredAt: number;
+  /**
+   * Timestamp (ms) of the last frame that qualified as open-palm/non-pinch.
+   * Lets a brief misclassification blip (see `poseGraceMs`) fail to reset
+   * the candidate instead of discarding real progress (2026-07-17 fix).
+   */
+  lastGoodAt: number;
 }
 
 export function createSwipeState(): SwipeState {
-  return { origin: null, lastFiredAt: -Infinity };
+  return { origin: null, lastFiredAt: -Infinity, lastGoodAt: -Infinity };
 }
 
 /**
@@ -33,7 +39,7 @@ export function createSwipeState(): SwipeState {
  */
 export function resetSwipeOrigin(state: SwipeState): SwipeState {
   if (state.origin === null) return state; // avoid needless object churn
-  return { origin: null, lastFiredAt: state.lastFiredAt };
+  return { origin: null, lastFiredAt: state.lastFiredAt, lastGoodAt: state.lastGoodAt };
 }
 
 export interface SwipeSample {
@@ -59,6 +65,8 @@ export interface SwipeThresholds {
   maxVerticalRatio: number;
   /** Minimum gap between two accepted swipes, ms. */
   cooldownMs: number;
+  /** How long a non-open-palm reading is tolerated before resetting, ms. */
+  poseGraceMs: number;
 }
 
 export interface SwipeUpdateResult {
@@ -72,13 +80,28 @@ export function updateSwipe(
   sample: SwipeSample,
   thresholds: SwipeThresholds,
 ): SwipeUpdateResult {
-  if (!sample.poseIsOpenPalm || sample.pinchActive) {
+  // An active pinch is a deliberate switch to a different gesture, not a
+  // misclassification blip — always an immediate, ungraced reset.
+  if (sample.pinchActive) {
     return { state: resetSwipeOrigin(state), direction: null };
+  }
+
+  if (!sample.poseIsOpenPalm) {
+    // Tolerate a brief non-open-palm reading (2026-07-17 fix): a fast sweep
+    // can blur/foreshorten fingers for a few frames, and resetting on every
+    // such frame threw away real progress before it could reach threshold.
+    const withinGrace =
+      state.origin !== null && sample.now - state.lastGoodAt <= thresholds.poseGraceMs;
+    return { state: withinGrace ? state : resetSwipeOrigin(state), direction: null };
   }
 
   if (state.origin === null) {
     return {
-      state: { origin: { x: sample.x, y: sample.y, t: sample.now }, lastFiredAt: state.lastFiredAt },
+      state: {
+        origin: { x: sample.x, y: sample.y, t: sample.now },
+        lastFiredAt: state.lastFiredAt,
+        lastGoodAt: sample.now,
+      },
       direction: null,
     };
   }
@@ -86,8 +109,9 @@ export function updateSwipe(
   const dx = sample.x - state.origin.x;
   const dy = sample.y - state.origin.y;
   const dt = (sample.now - state.origin.t) / 1000;
+  const carried = { ...state, lastGoodAt: sample.now };
   if (dt <= 0) {
-    return { state, direction: null };
+    return { state: carried, direction: null };
   }
 
   const distance = Math.abs(dx) / sample.scale;
@@ -102,10 +126,10 @@ export function updateSwipe(
     cooledDown
   ) {
     return {
-      state: { origin: null, lastFiredAt: sample.now },
+      state: { origin: null, lastFiredAt: sample.now, lastGoodAt: sample.now },
       direction: dx > 0 ? 1 : -1,
     };
   }
 
-  return { state, direction: null };
+  return { state: carried, direction: null };
 }

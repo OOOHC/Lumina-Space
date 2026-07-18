@@ -29,6 +29,10 @@ export function applyIntent(intent: Intent): void {
       // the owner's first field run showed gesture "dying" after one pinch.
       if (store.selectedId !== null) {
         store.select(null);
+        // Closing always glides back to the room overview (2026-07-17
+        // owner correction): the camera previously stayed at the wall
+        // waypoint, making "closed" look identical to "just before open".
+        store.requestReset();
         break;
       }
       const focused = store.photos[store.focusedIndex];
@@ -40,6 +44,7 @@ export function applyIntent(intent: Intent): void {
     case 'back':
       if (store.selectedId !== null) {
         store.select(null);
+        store.requestReset();
       }
       break;
     case 'reset-view':
@@ -59,6 +64,14 @@ export function applyIntent(intent: Intent): void {
       // Sustained tracking loss (>= TRACKING_LOST_CLOSE_MS). The one signal
       // that closes an opened photo on tracking loss — deliberately NOT
       // point-lost, which only invalidates the pointer (2026-07-17).
+      //
+      // Deliberately does NOT requestReset() (2026-07-18 correction): unlike
+      // Back/quick-pinch, this closure is involuntary — the visitor's hand
+      // merely left the frame, which is not the same as "I'm done, take me
+      // back to the room." Resetting here made an ordinary tracking blip
+      // (e.g. the hand drops out of frame while the visitor is absorbed in
+      // the photo) yank the camera away with no action on their part. Only
+      // a deliberate close (`back`, the `open-focused` toggle) glides home.
       if (store.selectedId !== null) {
         store.select(null);
       }
